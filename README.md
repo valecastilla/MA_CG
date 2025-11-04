@@ -2,7 +2,7 @@
 ## MultiAgents and Computer Graphics project
 
 ### Integrantes:
-Valentina Castilla Melgoza
+Valentina Castilla Melgoza  
 Darío Cuauhtémoc Peña Mariano
 
 ### Objetivo
