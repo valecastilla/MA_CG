@@ -21,8 +21,10 @@ import { Camera3D } from '../libs/camera3d';
 
 // Functions and arrays for the communication with the API
 import {
-  agents, obstacles, initAgentsModel,
-  update, getAgents, getObstacles
+  agents, obstacles, trafficLights, 
+  destinations, roads, initAgentsModel,
+  update, getAgents, getObstacles, 
+  getTrafficLights, getDestinations, getRoads
 } from '../libs/api_connection.js';
 
 // Define the shader code, using GLSL 3.00
@@ -5593,9 +5595,12 @@ async function main() {
   // Initialize the agents model
   await initAgentsModel();
 
-  // Get the agents and obstacles
+  // Get the agents, obstacles, traffic lights, destinations and roads
   await getAgents();
   await getObstacles();
+  await getTrafficLights();
+  await getDestinations();
+  await getRoads();
 
 
   // Initialize the scene
@@ -5669,11 +5674,44 @@ function setupObjects(scene, gl, programInfo) {
     const baseCone = new Object3D(-2);
     baseCone.prepareVAO(gl, programInfo, objText);
 
-    agent.arrays     = baseCone.arrays;
+    agent.arrays = baseCone.arrays;
     agent.bufferInfo = baseCone.bufferInfo;
-    agent.vao        = baseCone.vao;
+    agent.vao = baseCone.vao;
 
     agent.color = [0.7, 0.7, 0.7, 1.0];
+    scene.addObject(agent);
+  }
+
+  for (const agent of trafficLights) {
+    const trafficLightObj = new Object3D(-3);
+    trafficLightObj.prepareVAO(gl, programInfo);
+
+    agent.arrays = trafficLightObj.arrays;
+    agent.bufferInfo = trafficLightObj.bufferInfo;
+    agent.vao = trafficLightObj.vao;
+    agent.scale = { x: 0.3, y: 1.0, z: 0.3 };
+    scene.addObject(agent);
+  }
+
+  for (const agent of destinations) {
+    const destinationObj = new Object3D(-4);
+    destinationObj.prepareVAO(gl, programInfo);
+
+    agent.arrays = destinationObj.arrays;
+    agent.bufferInfo = destinationObj.bufferInfo;
+    agent.vao = destinationObj.vao;
+    agent.scale = { x: 0.3, y: 1.0, z: 0.3 };
+    scene.addObject(agent);
+  }
+
+  for (const agent of roads) {
+    const roadObj = new Object3D(-5);
+    roadObj.prepareVAO(gl, programInfo);
+
+    agent.arrays = roadObj.arrays;
+    agent.bufferInfo = roadObj.bufferInfo;
+    agent.vao = roadObj.vao;
+    agent.scale = { x: 0.3, y: 1.0, z: 0.3 };
     scene.addObject(agent);
   }
 
