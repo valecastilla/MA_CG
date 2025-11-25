@@ -15,11 +15,13 @@ class CityModel(Model):
 
     def __init__(self, N, seed=42):
 
+        
+
         super().__init__(seed=seed)
 
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
         dataDictionary = json.load(open("city_files/mapDictionary.json"))
-
+        self.spawnClock=10
         self.num_agents = N
         self.traffic_lights = []
 
@@ -32,7 +34,8 @@ class CityModel(Model):
             self.grid = OrthogonalMooreGrid(
                 [self.width, self.height], capacity=100, torus=False
             )
-
+            
+            
             # Goes through each character in the map file and creates the corresponding agent.
             for r, row in enumerate(lines):
                 for c, col in enumerate(row):
@@ -49,6 +52,7 @@ class CityModel(Model):
                             False if col == "S" else True,
                             int(dataDictionary[col]),
                         )
+                        agent = Road(self, cell, dataDictionary[col])
                         self.traffic_lights.append(agent)
 
                     elif col == "#":
@@ -57,8 +61,32 @@ class CityModel(Model):
                     elif col == "D":
                         agent = Destination(self, cell)
 
-        self.running = True
-
+        
+       
+    def crearAutos(self, stepsSpawm):
+        posiciones = [(0,0), (23,24), (0,24), (23,0)]
+        
+        if self.steps % stepsSpawm != 0:
+            return
+        for pos in posiciones:
+            
+            print("creando auto en: ", pos)
+            x, y = pos
+            cell = self.grid[(x, y)]
+            for cel in cell.agents:
+                if isinstance(cel, Car):
+                    self.running = False
+                    print("======================")
+                    print("======================")
+                    print("ERROR AUTO EN LA MISMA POSICION SE DETUVO LA SIMULACION") 
+                    print("======================")
+                    print("======================")
+                    return
+            car = Car(self, cell)
+        
     def step(self):
+        
+        self.crearAutos(self.spawnClock)
         """Advance the model by one step."""
         self.agents.shuffle_do("step")
+    

@@ -7,3 +7,4 @@ agents_requirements.txt
 .agents
 .vite
 .DS_Store
+/venv

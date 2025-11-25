@@ -15,13 +15,22 @@ def agent_portrayal(agent):
     )
 
     if isinstance(agent, Road):
-        portrayal.color = "#aaa"
-
+        portrayal.marker = "o"
+        if agent.direction == "Up":
+            portrayal.color = "#aaf"
+        elif agent.direction == "Down":
+            portrayal.color = "#faa"
+        elif agent.direction == "Right":
+            portrayal.color = "#afa"
+        elif agent.direction == "Left":
+            portrayal.color ="#ffa"
+#
     if isinstance(agent, Destination):
         portrayal.color = "lightgreen"
 
     if isinstance(agent, Traffic_Light):
-        portrayal.color = "red" if not agent.state else "green"
+        #TODO: cambiar colores A QUE SE VEAN
+        portrayal.color = "#EE909000" if not agent.state else "#90EE9000"
 
     if isinstance(agent, Obstacle):
         portrayal.color = "#555"
