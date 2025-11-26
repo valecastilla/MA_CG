@@ -3,7 +3,8 @@ in vec4 a_position; // input | atributos unicos a cada vertice
 in vec3 a_normal;
 
 // Scene uniforms
-uniform vec3 u_lightWorldPosition; // atributos para todos los vertices
+const int numLights = 25;
+uniform vec3 u_lightWorldPosition[numLights]; // atributos para todos los vertices
 uniform vec3 u_viewWorldPosition;
 
 // Model uniforms
@@ -13,7 +14,7 @@ uniform mat4 u_worldViewProjection;
 
 // Transformed normals
 out vec3 v_normal; // output
-out vec3 v_surfaceToLight;
+out vec3 v_surfaceToLight[numLights];
 out vec3 v_surfaceToView;
 
 void main() {
@@ -28,7 +29,10 @@ void main() {
 
 
     // Direction from the surface to the light
-    v_surfaceToLight = u_lightWorldPosition - surfaceWoldPosition;
+    for (int i = 0; i < numLights; i++){
+            v_surfaceToLight[i] = u_lightWorldPosition[i] - surfaceWoldPosition;
+
+    }
 
     // Direction from the surface to the view
     v_surfaceToView = u_viewWorldPosition - surfaceWoldPosition;

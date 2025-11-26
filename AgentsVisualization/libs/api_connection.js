@@ -16,6 +16,9 @@ const agent_server_uri = "http://localhost:8585/";
 // Initialize arrays to store agents and obstacles
 const agents = [];
 const obstacles = [];
+const trafficLights = [];
+const destinations = [];
+const roads = [];
 
 // Define the data object
 const initData = {
@@ -132,6 +135,95 @@ async function getObstacles() {
     }
 }
 
+async function getTrafficLights() {
+    try {
+        // Send a GET request to the agent server to retrieve the obstacle positions
+        let response = await fetch(agent_server_uri + "getTrafficLights");
+
+        // Check if the response was successful
+        if (response.ok) {
+            // Parse the response as JSON
+            let result = await response.json();
+
+            if (trafficLights.length === 0) {
+                // First time create the objects
+                for (const trafficLight of result.positions) {
+                    const newTrafficLight = new Object3D(
+                        trafficLight.id,
+                        [trafficLight.x, trafficLight.y, trafficLight.z]
+                    );
+                    newTrafficLight.state = trafficLight.state;
+                    trafficLights.push(newTrafficLight);
+                }
+            } else {
+                // Only update the state of existing objects
+                for (const trafficLight of result.positions) {
+                    const current = trafficLights.find(
+                        o => o.id == trafficLight.id
+                    );
+                    if (current) {
+                        current.state = trafficLight.state;
+                    }
+                }
+            }
+        }
+
+    } catch (error) {
+        // Log any errors that occur during the request
+        console.log(error);
+    }
+}
+
+async function getDestinations() {
+    try {
+        // Send a GET request to the agent server to retrieve the obstacle positions
+        let response = await fetch(agent_server_uri + "getDestinations");
+
+        // Check if the response was successful
+        if (response.ok) {
+            // Parse the response as JSON
+            let result = await response.json();
+
+            // Create new obstacles and add them to the obstacles array
+            for (const destination of result.positions) {
+                const newDestination = new Object3D(destination.id, [destination.x, destination.y, destination.z]);
+                destinations.push(newDestination);
+            }
+            // Log the obstacles array
+            //console.log("Obstacles:", obstacles);
+        }
+
+    } catch (error) {
+        // Log any errors that occur during the request
+        console.log(error);
+    }
+}
+
+async function getRoads() {
+    try {
+        // Send a GET request to the agent server to retrieve the obstacle positions
+        let response = await fetch(agent_server_uri + "getRoads");
+
+        // Check if the response was successful
+        if (response.ok) {
+            // Parse the response as JSON
+            let result = await response.json();
+
+            // Create new obstacles and add them to the obstacles array
+            for (const road of result.positions) {
+                const newRoad = new Object3D(road.id, [road.x, road.y, road.z]);
+                roads.push(newRoad);
+            }
+            // Log the obstacles array
+            //console.log("Obstacles:", obstacles);
+        }
+
+    } catch (error) {
+        // Log any errors that occur during the request
+        console.log(error);
+    }
+}
+
 /*
  * Updates the agent positions by sending a request to the agent server.
  */
@@ -144,6 +236,13 @@ async function update() {
         if (response.ok) {
             // Retrieve the updated agent positions
             await getAgents();
+            await getTrafficLights(); // re-fetch states
+            // Update traffic light colors based on their state
+            for (const light of trafficLights) {
+                light.color = light.state
+                    ? [0.0, 1.0, 0.0, 1.0]
+                    : [1.0, 0.0, 0.0, 1.0];
+            }
             // Log a message indicating that the agents have been updated
             //console.log("Updated agents");
         }
@@ -154,4 +253,4 @@ async function update() {
     }
 }
 
-export { agents, obstacles, initAgentsModel, update, getAgents, getObstacles };
+export { agents, obstacles, trafficLights, destinations, roads, initAgentsModel, update, getAgents, getObstacles, getTrafficLights, getDestinations, getRoads };

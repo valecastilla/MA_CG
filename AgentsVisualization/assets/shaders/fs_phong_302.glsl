@@ -1,14 +1,16 @@
 #version 300 es
 precision highp float;
 
+const int numLights = 25;
+
 in vec3 v_normal;
-in vec3 v_surfaceToLight;
+in vec3 v_surfaceToLight[numLights];
 in vec3 v_surfaceToView;
 
 // Scene uniforms
-uniform vec4 u_ambientLight;
-uniform vec4 u_diffuseLight;
-uniform vec4 u_specularLight;
+uniform vec4 u_ambientLight[numLights];
+uniform vec4 u_diffuseLight[numLights];
+uniform vec4 u_specularLight[numLights];
 
 // Model uniforms
 uniform vec4 u_ambientColor;
@@ -19,25 +21,29 @@ uniform float u_shininess;
 out vec4 outColor;
 
 void main() {
-    // v_normal must be normalized because the shader will interpolate
-    // it for each fragment
     vec3 normal = normalize(v_normal);
-
-    // Normalize the other incoming vectors
-    vec3 surfToLigthDirection = normalize(v_surfaceToLight);
     vec3 surfToViewDirection = normalize(v_surfaceToView);
 
-    vec3 r = normalize (2.0 * dot (normal, surfToLigthDirection) * normal - surfToLigthDirection);
+    vec4 ambientAccum  = vec4(0.0);
+    vec4 diffuseAccum  = vec4(0.0);
+    vec4 specularAccum = vec4(0.0);
 
-    // CALCULATIONS FOR THE AMBIENT, DIFFUSE and SPECULAR COMPONENTS
-    float diffuse = max(dot(normal, surfToLigthDirection), 0.0);
-    float specular = pow(max(dot(r, surfToViewDirection), 0.0), u_shininess);
+    for (int i = 0; i < numLights; ++i) {
+        vec3 surfToLightDirection = normalize(v_surfaceToLight[i]);
 
-    // Compute the three parts of the Phong lighting model
-    vec4 ambientColor = u_ambientLight * u_ambientColor;
-    vec4 diffuseColor = u_diffuseLight * u_diffuseColor * diffuse;
-    vec4 specularColor = u_specularLight * u_specularColor * specular;
+        // Reflection vector
+        vec3 r = normalize(2.0 * dot(normal, surfToLightDirection) * normal - surfToLightDirection);
 
-    // Use the color of the texture on the object
-    outColor = ambientColor + diffuseColor + specularColor;
+        // Phong components
+        float diffuse  = max(dot(normal, surfToLightDirection), 0.0);
+        float specular = pow(max(dot(r, surfToViewDirection), 0.0), u_shininess);
+
+        ambientAccum  += u_ambientLight[i]  * u_ambientColor;
+        diffuseAccum  += u_diffuseLight[i]  * u_diffuseColor  * diffuse;
+        specularAccum += u_specularLight[i] * u_specularColor * specular;
+    }
+
+    outColor = ambientAccum + diffuseAccum + specularAccum;
 }
+
+
