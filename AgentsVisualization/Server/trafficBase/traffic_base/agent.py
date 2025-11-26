@@ -1,24 +1,5 @@
 from mesa.discrete_space import CellAgent, FixedAgent
 
-class Car(CellAgent):
-    """
-    Agent that moves randomly.
-    """
-    def __init__(self, model, cell):
-        """
-        Creates a new random agent.
-        Args:
-            model: Model reference for the agent
-            cell: The initial position of the agent
-        """
-        super().__init__(model)
-        self.cell = cell
-
-    def step(self):
-        """ 
-        Determines the new direction it will take, and then moves
-        """
-        pass
 
 class Traffic_Light(FixedAgent):
     """
@@ -60,6 +41,21 @@ class Destination(FixedAgent):
         self.cell = cell
 
 class Obstacle(FixedAgent):
+    """
+    Obstacle agent. Just to add obstacles to the grid.
+    """
+    def __init__(self, model, cell):
+        """
+        Creates a new obstacle.
+        
+        Args:
+            model: Model reference for the agent
+            cell: The initial position of the agent
+        """
+        super().__init__(model)
+        self.cell = cell
+
+class Intersection(FixedAgent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
