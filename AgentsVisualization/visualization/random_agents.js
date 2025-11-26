@@ -18,6 +18,8 @@ import { generateConeOBJ } from '../libs/cg2.js';
 import { Object3D } from '../libs/object3d';
 import { Light3D } from '../libs/light3d';
 import { Camera3D } from '../libs/camera3d';
+
+import { loadMtl } from '../libs/obj_loader.js';
 //import 
 
 // Functions and arrays for the communication with the API
@@ -124,7 +126,44 @@ function setupScene() {
                              [0.3, 0.3, 0.3, 1.0],   // Ambient
                              [1.0, 1.0, 1.0, 1.0],   // Diffuse
                              [1.0, 1.0, 1.0, 1.0]);  // Specular
+
+  
   scene.addLight(light);
+
+   // traffic lights as lights
+  const numLights = 25;
+  let nextLightIndex = 1;      // 0 is the sun
+
+  for (const tl of trafficLights) {
+    if (nextLightIndex >= numLights) {
+      break; // only 11 traffic lights in the shader, one used by the sun
+    }
+
+    // Get color for light from current state
+    const baseColor = tl.state
+      ? [0.0, 1.0, 0.0, 1.0]   // green
+      : [1.0, 0.0, 0.0, 1.0];  // red
+
+    const ambient  = [0.0, 0.0, 0.0, 1.0];  
+    const diffuse  = baseColor; // color dependent on state
+    const specular = [1.0, 1.0, 1.0, 1.0];
+
+    const pos = [tl.position.x, tl.position.y, tl.position.z];
+
+    const light = new Light3D(
+      nextLightIndex,
+      pos,
+      ambient,
+      diffuse,
+      specular
+    );
+
+    // Save which traffic light this light belongs to
+    light.trafficId = tl.id;
+
+    scene.addLight(light);
+    nextLightIndex++;
+  }
 }
 
 function randRange(min, max) {
@@ -162,7 +201,7 @@ function setupObjects(scene, gl, programInfo) {
     const sides = 4;
     const height = randRange(0.5, 1.5);
     const rBottom = randRange(0.3, 0.7);
-    const rTop = randRange(0.3, 0.7); // same as rBottom if you want cylinder
+    const rTop = randRange(0.3, 0.7); 
 
     const objText = generateConeOBJ(sides, height, rBottom, rBottom);
 
@@ -184,9 +223,11 @@ function setupObjects(scene, gl, programInfo) {
     agent.arrays = trafficLightObj.arrays;
     agent.bufferInfo = trafficLightObj.bufferInfo;
     agent.vao = trafficLightObj.vao;
-    agent.tra
     agent.scale = { x: 0.3, y: 1.0, z: 0.3 };
-    agent.color = [0.0, 1.0, 0.0, 1.0];
+
+    agent.color = agent.state
+        ? [0.0, 1.0, 0.0, 1.0]  // green
+        : [1.0, 0.0, 0.0, 1.0];  // red
     scene.addObject(agent);
   }
 
@@ -197,6 +238,7 @@ function setupObjects(scene, gl, programInfo) {
     agent.arrays = destinationObj.arrays;
     agent.bufferInfo = destinationObj.bufferInfo;
     agent.vao = destinationObj.vao;
+
     agent.color = [1.0, 0.0, 0.0, 1.0];
     agent.scale = { x: 0.3, y: 1.0, z: 0.3 };
     scene.addObject(agent);
@@ -300,15 +342,72 @@ async function drawScene() {
     drawObject(gl, phongProgramInfo, object, viewProjectionMatrix, fract);
   }
 
-  // Poner arreglo pos luces
-  let globalUniforms = {
-        u_viewWorldPosition: scene.camera.posArray,
-        u_lightWorldPosition: scene.lights[0].posArray,
-        u_ambientLight: scene.lights[0].ambient,
-        u_diffuseLight: scene.lights[0].diffuse,
-        u_specularLight: scene.lights[0].specular,
+  for (const tl of trafficLights) {
+    const light = scene.lights.find(l => l.trafficId === tl.id); // find corresponding light
+    if (!light) continue;
 
+    const baseColor = tl.state
+      ? [0.0, 1.0, 0.0, 1.0]   // green
+      : [1.0, 0.0, 0.0, 1.0];  // red
+
+    light.ambient =  [0.0, 0.0, 0.0, 1.0];
+
+    light.diffuse = baseColor;
+    // specular stay white
+  }
+
+  const numLights = 25;
+  const lightPositions = [];
+  const ambientLights  = [];
+  const diffuseLights  = [];
+  const specularLights = [];
+
+  for (let i = 0; i < numLights; i++) {
+    const light = scene.lights[i];
+
+    if (light) {
+      lightPositions.push(
+        light.posArray[0],
+        light.posArray[1],
+        light.posArray[2],
+      );
+
+      ambientLights.push(
+        light.ambient[0],
+        light.ambient[1],
+        light.ambient[2],
+        light.ambient[3],
+      );
+
+      diffuseLights.push(
+        light.diffuse[0],
+        light.diffuse[1],
+        light.diffuse[2],
+        light.diffuse[3],
+      );
+
+      specularLights.push(
+        light.specular[0],
+        light.specular[1],
+        light.specular[2],
+        light.specular[3],
+      );
+    } else {
+      // If no more lights
+      lightPositions.push(0.0, 10000.0, 0.0);
+      ambientLights.push(0.0, 0.0, 0.0, 1.0);
+      diffuseLights.push(0.0, 0.0, 0.0, 1.0);
+      specularLights.push(0.0, 0.0, 0.0, 1.0);
     }
+  }
+
+  const globalUniforms = {
+    u_viewWorldPosition: scene.camera.posArray,
+    u_lightWorldPosition: lightPositions,  
+    u_ambientLight: ambientLights,         
+    u_diffuseLight: diffuseLights,
+    u_specularLight: specularLights,
+  };
 
     twgl.setUniforms(phongProgramInfo, globalUniforms);
 

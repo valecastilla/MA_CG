@@ -3,7 +3,7 @@ in vec4 a_position; // input | atributos unicos a cada vertice
 in vec3 a_normal;
 
 // Scene uniforms
-const int numLights = 12;
+const int numLights = 25;
 uniform vec3 u_lightWorldPosition[numLights]; // atributos para todos los vertices
 uniform vec3 u_viewWorldPosition;
 

@@ -145,13 +145,27 @@ async function getTrafficLights() {
             // Parse the response as JSON
             let result = await response.json();
 
-            // Create new obstacles and add them to the obstacles array
-            for (const trafficLight of result.positions) {
-                const newTrafficLight = new Object3D(trafficLight.id, [trafficLight.x, trafficLight.y, trafficLight.z]);
-                trafficLights.push(newTrafficLight);
+            if (trafficLights.length === 0) {
+                // First time create the objects
+                for (const trafficLight of result.positions) {
+                    const newTrafficLight = new Object3D(
+                        trafficLight.id,
+                        [trafficLight.x, trafficLight.y, trafficLight.z]
+                    );
+                    newTrafficLight.state = trafficLight.state;
+                    trafficLights.push(newTrafficLight);
+                }
+            } else {
+                // Only update the state of existing objects
+                for (const trafficLight of result.positions) {
+                    const current = trafficLights.find(
+                        o => o.id == trafficLight.id
+                    );
+                    if (current) {
+                        current.state = trafficLight.state;
+                    }
+                }
             }
-            // Log the obstacles array
-            //console.log("Obstacles:", obstacles);
         }
 
     } catch (error) {
@@ -222,6 +236,13 @@ async function update() {
         if (response.ok) {
             // Retrieve the updated agent positions
             await getAgents();
+            await getTrafficLights(); // re-fetch states
+            // Update traffic light colors based on their state
+            for (const light of trafficLights) {
+                light.color = light.state
+                    ? [0.0, 1.0, 0.0, 1.0]
+                    : [1.0, 0.0, 0.0, 1.0];
+            }
             // Log a message indicating that the agents have been updated
             //console.log("Updated agents");
         }

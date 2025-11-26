@@ -140,7 +140,7 @@ def getTrafficLights():
             # print(f"AGENTS: {agents}")
 
             trafficLightPositions = [
-                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
+                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1], "state": a.state}
                 for (coordinate, a) in agents
             ]
             # print(f"OBSTACLE POSITIONS: {obstaclePositions}")
