@@ -10,8 +10,9 @@ export function generateConeOBJ(side, height, baseRadius, topRadius) {
 
     // Ring vertices
     let angleStep = (2 * Math.PI) / side;
+    let angleOffset = angleStep / 2;
     for (let s = 0; s < side; s++) {
-        let angle = angleStep * s;
+        let angle = angleStep * s + angleOffset;
         let xBase = baseRadius * Math.cos(angle);
         let zBase = baseRadius * Math.sin(angle);
         let xTop  = topRadius * Math.cos(angle);
