@@ -6,6 +6,7 @@ const int numLights = 25;
 in vec3 v_normal;
 in vec3 v_surfaceToLight[numLights];
 in vec3 v_surfaceToView;
+in float v_lightDist2[numLights];
 
 // Scene uniforms
 uniform vec4 u_ambientLight[numLights];
@@ -37,6 +38,8 @@ void main() {
         // Phong components
         float diffuse  = max(dot(normal, surfToLightDirection), 0.0);
         float specular = pow(max(dot(r, surfToViewDirection), 0.0), u_shininess);
+
+        float attenuation = 1.0 / (1.0 + 0.1 * v_lightDist2[i]);
 
         ambientAccum  += u_ambientLight[i]  * u_ambientColor;
         diffuseAccum  += u_diffuseLight[i]  * u_diffuseColor  * diffuse;

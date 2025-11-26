@@ -85,8 +85,13 @@ import obstacle8MltText from '../assets/obj/3d/edificios/tronco.mtl?raw';
 obstacleObjects.push(objTextObstacle8);
 
 
+// Agents
+let agentObjects = [];
+const objTextAgent1 = loadText("../assets/obj/3d/huevos/huevo1.obj");
+import agent1MltText from '../assets/obj/3d/edificios/tronco.mtl?raw';
+agentObjects.push(objTextAgent1);
 
-const objTextAgent = loadText("../assets/obj/agentes.obj");
+const baseCube = new Object3D(-1);
 
 
 
@@ -171,19 +176,19 @@ function setupScene() {
   
   scene.addLight(light);
 
-   // traffic lights as lights
+   // Traffic lights as lights
   const numLights = 25;
-  let nextLightIndex = 1;      // 0 is the sun
+  let nextLightIndex = 1; // 0 is the sun
 
   for (const tl of trafficLights) {
     if (nextLightIndex >= numLights) {
-      break; // only 11 traffic lights in the shader, one used by the sun
+      break; 
     }
 
     // Get color for light from current state
     const baseColor = tl.state
-      ? [0.0, 1.0, 0.0, 1.0]   // green
-      : [1.0, 0.0, 0.0, 1.0];  // red
+      ? [0.0, 1.0, 0.0, 1.0] // green
+      : [1.0, 0.0, 0.0, 1.0]; // red
 
     const ambient  = [0.0, 0.0, 0.0, 1.0];  
     const diffuse  = baseColor; // color dependent on state
@@ -213,9 +218,36 @@ function randRange(min, max) {
 
 function setupObjects(scene, gl, programInfo) {
   // Create VAOs for the different shapes
-  const baseCube = new Object3D(-1);
-  baseCube.prepareVAO(gl, programInfo, objTextAgent);
+  //baseCube = new Object3D(-1);
+  baseCube.prepareVAO(gl, programInfo, objTextAgent1);
   // Use objloader function with
+
+  // Array to save the obstacle objects
+  let obstacleObjects3d = [];
+  const obstacle1 = new Object3D(-2);
+  obstacle1.prepareVAO(gl, programInfo, obstacleObjects[0]);
+  obstacleObjects3d.push(obstacle1);
+  const obstacle2 = new Object3D(-2);
+  obstacle2.prepareVAO(gl, programInfo, obstacleObjects[1]);
+  obstacleObjects3d.push(obstacle2);
+  const obstacle3 = new Object3D(-2);
+  obstacle3.prepareVAO(gl, programInfo, obstacleObjects[2]);
+  obstacleObjects3d.push(obstacle3);
+  const obstacle4 = new Object3D(-2);
+  obstacle4.prepareVAO(gl, programInfo, obstacleObjects[3]);
+  obstacleObjects3d.push(obstacle4);
+  const obstacle5 = new Object3D(-2);
+  obstacle5.prepareVAO(gl, programInfo, obstacleObjects[4]);
+  obstacleObjects3d.push(obstacle5);
+  const obstacle6 = new Object3D(-2);
+  obstacle6.prepareVAO(gl, programInfo, obstacleObjects[5]);
+  obstacleObjects3d.push(obstacle6);
+
+  // Destination
+  loadMtl(destinationMltText);
+  const destinationObj = new Object3D(-4);
+  destinationObj.prepareVAO(gl, programInfo, objTextDestination);
+  
 
   /*
   // A scaled cube to use as the ground
@@ -233,21 +265,18 @@ function setupObjects(scene, gl, programInfo) {
     agent.arrays = baseCube.arrays;
     agent.bufferInfo = baseCube.bufferInfo;
     agent.vao = baseCube.vao;
-    agent.scale = { x: 0.5, y: 0.5, z: 0.5 };
+    agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
     scene.addObject(agent);
   }
 
   // Copy the properties of the base objects
   for (const agent of obstacles) {
     const index = Math.floor(randRange(0, obstacleObjects.length));
-    const objTextObstacle = obstacleObjects[index];
+    const baseObstacleObject = obstacleObjects3d[index];
 
-    const baseCone = new Object3D(-2);
-    baseCone.prepareVAO(gl, programInfo, objTextObstacle);
-
-    agent.arrays = baseCone.arrays;
-    agent.bufferInfo = baseCone.bufferInfo;
-    agent.vao = baseCone.vao;
+    agent.arrays = baseObstacleObject.arrays;
+    agent.bufferInfo = baseObstacleObject.bufferInfo;
+    agent.vao = baseObstacleObject.vao;
 
     agent.color = [0.0, 0.0, 1.0, 1.0];
 
@@ -298,15 +327,12 @@ function setupObjects(scene, gl, programInfo) {
   }
 
   for (const agent of destinations) {
-    loadMtl(destinationMltText);
-    const destinationObj = new Object3D(-4);
-    destinationObj.prepareVAO(gl, programInfo, objTextDestination);
 
     agent.arrays = destinationObj.arrays;
     agent.bufferInfo = destinationObj.bufferInfo;
     agent.vao = destinationObj.vao;
 
-    agent.color = [239/255, 111/255, 108/255, 1.0];
+    // agent.color = [239/255, 111/255, 108/255, 1.0];
     agent.scale = { x: 0.0075, y: 0.0075, z: 0.0075 };
     scene.addObject(agent);
   }
@@ -405,17 +431,25 @@ async function drawScene() {
   // Draw the objects
   gl.useProgram(phongProgramInfo.program);
 
+  for (const agent of agents) {
+    agent.arrays = baseCube.arrays;
+    agent.bufferInfo = baseCube.bufferInfo;
+    agent.vao = baseCube.vao;
+    agent.scale = { x: 0.25, y: 0.35, z: 0.25 };
+    scene.addObject(agent);
+  }
+
   for (let object of scene.objects) {
     drawObject(gl, phongProgramInfo, object, viewProjectionMatrix, fract);
   }
 
   for (const tl of trafficLights) {
-    const light = scene.lights.find(l => l.trafficId === tl.id); // find corresponding light
+    const light = scene.lights.find(l => l.trafficId === tl.id); 
     if (!light) continue;
 
     const baseColor = tl.state
-      ? [0.0, 1.0, 0.0, 1.0]   // green
-      : [1.0, 0.0, 0.0, 1.0];  // red
+      ? [0.0, 1.0, 0.0, 1.0] // green
+      : [1.0, 0.0, 0.0, 1.0]; // red
 
     light.ambient =  [0.0, 0.0, 0.0, 0.0];
 
