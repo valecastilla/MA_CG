@@ -11,6 +11,47 @@ import { M4 } from '../libs/3d-lib';
 import { cubeVertexColors, cubeFaceColors } from '../libs/shapes';
 import { loadObj } from '../libs/obj_loader';
 
+function recenterArrays(arrays, mode = "base") {
+    const pos = arrays.a_position.data;
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
+
+    for (let i = 0; i < pos.length; i += 3) {
+        const x = pos[i];
+        const y = pos[i + 1];
+        const z = pos[i + 2];
+
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+        if (z < minZ) minZ = z;
+        if (z > maxZ) maxZ = z;
+    }
+
+    let offX, offY, offZ;
+
+    if (mode === "center") {
+        // Center of the bounding box in all axes
+        offX = - (minX + maxX) / 2;
+        offY = - (minY + maxY) / 2;
+        offZ = - (minZ + maxZ) / 2;
+    } else {
+        // "base": center in XZ, put base on Y = 0
+        offX = - (minX + maxX) / 2;
+        offY = - minY;
+        offZ = - (minZ + maxZ) / 2;
+    }
+
+    for (let i = 0; i < pos.length; i += 3) {
+        pos[i]     += offX;
+        pos[i + 1] += offY;
+        pos[i + 2] += offZ;
+    }
+}
+
+
 class Object3D {
     constructor(id,
         position=[0, 0, 0],
@@ -72,6 +113,8 @@ class Object3D {
         return [this.scale.x, this.scale.y, this.scale.z];
     }
 
+    
+
     // Set up the WebGL components for an object
     prepareVAO(gl, programInfo, objData) {
         if (objData == undefined) {
@@ -81,6 +124,7 @@ class Object3D {
         } else {
             // Or using an obj file
             this.arrays = loadObj(objData);
+            recenterArrays(this.arrays, "base");
         }
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.arrays);
         this.vao = twgl.createVAOFromBufferInfo(gl, programInfo, this.bufferInfo);

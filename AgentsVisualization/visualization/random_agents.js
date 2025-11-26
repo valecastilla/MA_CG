@@ -60,21 +60,21 @@ const objTextObstacle2 = loadText("../assets/obj/3d/edificios/arbol2.obj");
 import obstacle2MltText from '../assets/obj/3d/edificios/arbol2.mtl?raw';
 obstacleObjects.push(objTextObstacle2);
 
-const objTextObstacle3 = loadText("../assets/obj/3d/edificios/arbol3_centered.obj");
+const objTextObstacle3 = loadText("../assets/obj/3d/edificios/arbol3.obj");
 import obstacle3MltText from '../assets/obj/3d/edificios/arbol3.mtl?raw';
 obstacleObjects.push(objTextObstacle3);
 
-const objTextObstacle4 = loadText("../assets/obj/3d/edificios/maleza.obj");
-import obstacle4MltText from '../assets/obj/3d/edificios/maleza.mtl?raw';
-obstacleObjects.push(objTextObstacle4);
+// const objTextObstacle4 = loadText("../assets/obj/3d/edificios/maleza.obj");
+// import obstacle4MltText from '../assets/obj/3d/edificios/maleza.mtl?raw';
+// obstacleObjects.push(objTextObstacle4);
 
 const objTextObstacle5 = loadText("../assets/obj/3d/edificios/roca1.obj");
 import obstacle5MltText from '../assets/obj/3d/edificios/roca1.mtl?raw';
 obstacleObjects.push(objTextObstacle5);
 
-const objTextObstacle6 = loadText("../assets/obj/3d/edificios/roca2.obj");
-import obstacle6MltText from '../assets/obj/3d/edificios/roca2.mtl?raw';
-obstacleObjects.push(objTextObstacle6);
+// const objTextObstacle6 = loadText("../assets/obj/3d/edificios/roca2.obj");
+// import obstacle6MltText from '../assets/obj/3d/edificios/roca2.mtl?raw';
+// obstacleObjects.push(objTextObstacle6);
 
 const objTextObstacle7 = loadText("../assets/obj/3d/edificios/roca3.obj");
 import obstacle7MltText from '../assets/obj/3d/edificios/roca3.mtl?raw';
@@ -252,12 +252,32 @@ function setupObjects(scene, gl, programInfo) {
     agent.color = [0.0, 0.0, 1.0, 1.0];
 
     agent.scale = { x: 0.1, y: 0.1, z: 0.1 };
-    if (index == 7) {
-      agent.scale = { x: 1.25, y: 3, z: 1.25 };
+    if (index == 5) {
+      agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
+      // Make tronco colored brown
+      agent.color = [0.55, 0.27, 0.07, 1.0];
       //agent.translation = { x: 0, y: 3, z: 0 };
     }
+    // Arbol 
+    else if (index == 0) {
+      agent.scale = { x: 0.35, y: 0.35, z: 0.35 };
+      agent.color = [98/255, 150/255, 88/255, 1.0]; 
+    }
+    else if (index == 1) {
+      agent.scale = { x: 0.5, y: 0.4, z: 0.5 };
+      agent.color = [34/255, 139/255, 34/255, 1.0]; 
+    }
     else if (index == 2) {
-      agent.scale = { x: 0.25, y: 0.35, z: 0.25 };
+      agent.scale = { x: 0.55, y: 0.5, z: 0.55 };
+      agent.color = [98/255, 109/255, 88/255, 1.0]; 
+    }
+    else if (index == 3) {
+      agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
+      agent.color = [116/255, 117/255, 120/255, 1.0];
+    }
+    else if (index == 4) {
+      agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
+      agent.color = [116/255, 109/255, 117/255, 1.0]; 
     }
     scene.addObject(agent);
   }
@@ -286,7 +306,7 @@ function setupObjects(scene, gl, programInfo) {
     agent.bufferInfo = destinationObj.bufferInfo;
     agent.vao = destinationObj.vao;
 
-    agent.color = [1.0, 1.0, 1.0, 1.0];
+    agent.color = [239/255, 111/255, 108/255, 1.0];
     agent.scale = { x: 0.0075, y: 0.0075, z: 0.0075 };
     scene.addObject(agent);
   }
@@ -299,7 +319,7 @@ function setupObjects(scene, gl, programInfo) {
     agent.bufferInfo = roadObj.bufferInfo;
     agent.vao = roadObj.vao;
     agent.scale = {x: 50, y: 0.1, z: 50};
-    agent.color = [0.6, 0.6, 0.6, 1];
+    agent.color = [49/255, 233/255, 150/255, 1.0];
     scene.addObject(agent);
   }
 
@@ -397,9 +417,9 @@ async function drawScene() {
       ? [0.0, 1.0, 0.0, 1.0]   // green
       : [1.0, 0.0, 0.0, 1.0];  // red
 
-    light.ambient =  [0.0, 0.0, 0.0, 1.0];
+    light.ambient =  [0.0, 0.0, 0.0, 0.0];
 
-    light.diffuse = baseColor;
+    light.diffuse = [0.0, 0.0, 0.0, 0.0];
     // specular stay white
   }
 
