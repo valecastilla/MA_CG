@@ -98,9 +98,13 @@ const objTextAgent1 = loadText("../assets/obj/3d/huevos/huevo1.obj");
 import agent1MltText from "../assets/obj/3d/edificios/tronco.mtl?raw";
 agentObjects.push(objTextAgent1);
 
-// Road
+// Pasto
 const objTextRoad = loadText("../assets/obj/3d/roads/grass.obj");
 import roadMltText from "../assets/obj/3d/grass.mtl?raw";
+const objTextRoad2 = loadText("../assets/obj/3d/roads/grass2.obj");
+import road2MltText from "../assets/obj/3d/roads/grass2.mtl?raw";
+// Road
+
 
 const baseCube = new Object3D(-1);
 
@@ -263,9 +267,10 @@ function setupObjects(scene, gl, programInfo) {
   destinationObj.prepareVAO(gl, programInfo, objTextDestination);
 
   // Roads
-  loadMtl(roadMltText);
+  loadMtl(road2MltText);
   const roadObj = new Object3D(-5);
-  roadObj.prepareVAO(gl, programInfo, objTextRoad);
+  roadObj.prepareVAO(gl, programInfo, objTextRoad2);
+  
 
   /*
   // A scaled cube to use as the ground
@@ -542,12 +547,17 @@ async function drawScene() {
     }
   }
 
+  const ambientLight = [0.2, 0.2, 0.2, 1.0];
+
   const globalUniforms = {
     u_viewWorldPosition: scene.camera.posArray,
     u_lightWorldPosition: lightPositions,
-    u_ambientLight: ambientLights,
+    u_ambientLight: ambientLight,
     u_diffuseLight: diffuseLights,
     u_specularLight: specularLights,
+    u_constant: 1.0,
+    u_linear: 0.09,
+    u_quadratic: 0.032,
   };
 
   twgl.setUniforms(phongProgramInfo, globalUniforms);

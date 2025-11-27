@@ -78,15 +78,36 @@ class CityModel(Model):
                        
                     elif col in ["←", "↑","→","↓"]:
                          agent = Intersection(self, cell)
-                    elif col in ["S", "s"]:
-                        agent = Traffic_Light(
+                    elif col in ["⬅", "⮕", "⬆", "⬇"]:
+                        
+                        traffic_light = Traffic_Light(
                             self,
                             cell,
-                            False if col == "S" else True,
-                            int(dataDictionary[col]),
+                            True,
+                            (dataDictionary["s"]),
                         )
-                        agent = Road(self, cell, dataDictionary[col]) 
-                        self.traffic_lights.append(agent)
+                        self.traffic_lights.append(traffic_light)
+                        
+
+
+    
+                        if col == "⬅":
+                            agent = Road(self, cell, dataDictionary["<"])
+                            agent.char = "<"
+                           
+                            
+                        elif col == "⮕":
+                            agent = Road(self, cell, dataDictionary[">"])
+                            agent.char = ">"
+                           
+                        elif col == "⬆":
+                            agent = Road(self, cell, dataDictionary["^"])
+                            agent.char = "^"
+                        elif col == "⬇":
+                            agent = Road(self, cell, dataDictionary["v"])
+                            agent.char = "v"
+                            
+                        
 
                     elif col == "#":
                         agent = Obstacle(self, cell)
@@ -299,34 +320,36 @@ class CityModel(Model):
         return vecinos
     
     def crearAutos(self, stepsSpawm):
-        posiciones = [(0,0), (23,23), (0,23), (23,0)]
-        
-        if self.steps % stepsSpawm != 0:
-            return
-        
-        for pos in posiciones:
-            x, y = pos
-            cell = self.grid[(x, y)]
-            
-            # Verificar si ya hay un carro en esta posición
-            tiene_carro = any(isinstance(agent, Car) for agent in cell.agents)
-            
-            if tiene_carro:
-                # Solo imprimir info, no detener la simulación
-                print(f"INFO: Ya hay un auto en {pos}, saltando spawn")
-                continue  # Continuar con la siguiente posición
-            
-            # Verificar que haya una Road en esta posición
-            tiene_road = any(isinstance(agent, Road) for agent in cell.agents)
-            
-            if not tiene_road:
-                print(f"WARNING: No hay Road en {pos}, no se puede crear auto")
-                continue
-            
-            # Crear el carro
-            print(f"Creando auto en: {pos}")
-            car = Car(self, cell)
-            cell.add_agent(car)
+     posiciones = [(0,0), (23,23), (0,23), (23,0)]
+     
+     if self.steps % stepsSpawm != 0:
+         return
+     
+     for pos in posiciones:
+         x, y = pos
+         cell = self.grid[(x, y)]
+         
+         # Verificar si ya hay un carro EN ESTA CELDA ESPECÍFICA
+         carros_en_celda = [agent for agent in cell.agents if isinstance(agent, Car)]
+         
+         if carros_en_celda:
+             # Debug: ver si el carro realmente está ahí o es un error de registro
+             print(f"INFO: Carros en {pos}: {len(carros_en_celda)}")
+             for carro in carros_en_celda:
+                 print(f"  - Carro {carro.unique_id} dice estar en {carro.cell.coordinate}")
+             continue
+         
+         # Verificar que haya una Road en esta posición
+         tiene_road = any(isinstance(agent, Road) for agent in cell.agents)
+         
+         if not tiene_road:
+             print(f"WARNING: No hay Road en {pos}, no se puede crear auto")
+             continue
+         
+         # Crear el carro
+         print(f"✓ Creando auto en: {pos}")
+         car = Car(self, cell)
+         # NO hace falta hacer cell.add_agent(car) si ya lo haces en __init__ de Car
     def crearConexionesNodos(self):
         """
         Crea las conexiones entre nodos siguiendo el sentido de las carreteras.
