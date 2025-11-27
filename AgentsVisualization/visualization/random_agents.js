@@ -252,9 +252,10 @@ function setupObjects(scene, gl, programInfo) {
   //loadMtl(destinationMltText);
 
   // Destination
-  // loadMtl(destinationMltText);
+  //loadMtl(destinationMltText);
   const destinationObj = new Object3D(-4);
   destinationObj.prepareVAO(gl, programInfo, objTextDestination);
+  console.log("arbol1 base color:", obstacle1.color);
   
 
   /*
