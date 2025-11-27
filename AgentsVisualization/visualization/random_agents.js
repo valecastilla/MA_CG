@@ -47,7 +47,7 @@ function loadText(path) {
 
 
 
-const objTextDestination = loadText("../assets/obj/3d/canasta/canasta.obj");
+const objTextDestination = loadText("../assets/obj/3d/canasta/Cana.obj");
 import destinationMltText from '../assets/obj/3d/canasta/canasta.mtl?raw';
 
 // Create vec to store obstacles objects to then chose them randomly
@@ -224,27 +224,35 @@ function setupObjects(scene, gl, programInfo) {
 
   // Array to save the obstacle objects
   let obstacleObjects3d = [];
+  loadMtl(obstacle1MltText);
   const obstacle1 = new Object3D(-2);
   obstacle1.prepareVAO(gl, programInfo, obstacleObjects[0]);
+  console.log("arbol1 base color:", obstacle1.color);
   obstacleObjects3d.push(obstacle1);
+  loadMtl(obstacle2MltText);
   const obstacle2 = new Object3D(-2);
   obstacle2.prepareVAO(gl, programInfo, obstacleObjects[1]);
   obstacleObjects3d.push(obstacle2);
+  //loadMtl(obstacle3MltText);
   const obstacle3 = new Object3D(-2);
   obstacle3.prepareVAO(gl, programInfo, obstacleObjects[2]);
   obstacleObjects3d.push(obstacle3);
+  //loadMtl(obstacle5MltText);
   const obstacle4 = new Object3D(-2);
   obstacle4.prepareVAO(gl, programInfo, obstacleObjects[3]);
   obstacleObjects3d.push(obstacle4);
+  //loadMtl(obstacle7MltText);
   const obstacle5 = new Object3D(-2);
   obstacle5.prepareVAO(gl, programInfo, obstacleObjects[4]);
   obstacleObjects3d.push(obstacle5);
+  //loadMtl(obstacle8MltText);
   const obstacle6 = new Object3D(-2);
   obstacle6.prepareVAO(gl, programInfo, obstacleObjects[5]);
   obstacleObjects3d.push(obstacle6);
+  //loadMtl(destinationMltText);
 
   // Destination
-  loadMtl(destinationMltText);
+  // loadMtl(destinationMltText);
   const destinationObj = new Object3D(-4);
   destinationObj.prepareVAO(gl, programInfo, objTextDestination);
   
@@ -278,7 +286,7 @@ function setupObjects(scene, gl, programInfo) {
     agent.bufferInfo = baseObstacleObject.bufferInfo;
     agent.vao = baseObstacleObject.vao;
 
-    agent.color = [0.0, 0.0, 1.0, 1.0];
+    //agent.color = [0.0, 0.0, 1.0, 1.0];
 
     agent.scale = { x: 0.1, y: 0.1, z: 0.1 };
     if (index == 5) {
@@ -290,11 +298,11 @@ function setupObjects(scene, gl, programInfo) {
     // Arbol 
     else if (index == 0) {
       agent.scale = { x: 0.35, y: 0.35, z: 0.35 };
-      agent.color = [98/255, 150/255, 88/255, 1.0]; 
+      agent.color = obstacleObjects3d[index].color; 
     }
     else if (index == 1) {
       agent.scale = { x: 0.5, y: 0.4, z: 0.5 };
-      agent.color = [34/255, 139/255, 34/255, 1.0]; 
+      //agent.color = [34/255, 139/255, 34/255, 1.0]; 
     }
     else if (index == 2) {
       agent.scale = { x: 0.55, y: 0.5, z: 0.55 };
@@ -332,7 +340,7 @@ function setupObjects(scene, gl, programInfo) {
     agent.bufferInfo = destinationObj.bufferInfo;
     agent.vao = destinationObj.vao;
 
-    // agent.color = [239/255, 111/255, 108/255, 1.0];
+    //agent.color = destinationObj.color;
     agent.scale = { x: 0.0075, y: 0.0075, z: 0.0075 };
     scene.addObject(agent);
   }
