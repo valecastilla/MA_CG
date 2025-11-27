@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 from traffic_base.model import CityModel
 from traffic_base.agent import *
-
+from traffic_base.car import *
 # Size of the board:
 number_agents = 10
 width = 28

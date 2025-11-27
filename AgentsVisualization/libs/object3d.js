@@ -13,9 +13,9 @@ import { loadObj } from '../libs/obj_loader';
 
 function recenterArrays(arrays, mode = "base") {
     const pos = arrays.a_position.data;
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
-    let minZ = Infinity, maxZ = -Infinity;
+    let minX = Infinity, maxX =-Infinity;
+    let minY = Infinity, maxY =-Infinity;
+    let minZ = Infinity, maxZ =-Infinity;
 
     for (let i = 0; i < pos.length; i += 3) {
         const x = pos[i];
@@ -34,18 +34,18 @@ function recenterArrays(arrays, mode = "base") {
 
     if (mode === "center") {
         // Center of the bounding box in all axes
-        offX = - (minX + maxX) / 2;
-        offY = - (minY + maxY) / 2;
-        offZ = - (minZ + maxZ) / 2;
+        offX =- (minX + maxX) / 2;
+        offY =- (minY + maxY) / 2;
+        offZ =- (minZ + maxZ) / 2;
     } else {
         // "base": center in XZ, put base on Y = 0
-        offX = - (minX + maxX) / 2;
-        offY = - minY;
-        offZ = - (minZ + maxZ) / 2;
+        offX =- (minX + maxX) / 2;
+        offY =- minY;
+        offZ =- (minZ + maxZ) / 2;
     }
 
     for (let i = 0; i < pos.length; i += 3) {
-        pos[i]     += offX;
+        pos[i] += offX;
         pos[i + 1] += offY;
         pos[i + 2] += offZ;
     }
@@ -58,7 +58,6 @@ class Object3D {
         rotation=[0, 0, 0],
         scale=[1, 1, 1],
         color=[Math.random(), Math.random(), Math.random(), 1.0]) {
-
         this.id = id;
         // Initial transformations
         this.position = {
@@ -113,8 +112,6 @@ class Object3D {
         return [this.scale.x, this.scale.y, this.scale.z];
     }
 
-    
-
     // Set up the WebGL components for an object
     prepareVAO(gl, programInfo, objData) {
         if (objData == undefined) {
@@ -125,6 +122,10 @@ class Object3D {
             // Or using an obj file
             this.arrays = loadObj(objData);
             recenterArrays(this.arrays, "base");
+            if (this.arrays.a_color && this.arrays.a_color.data.length >= 3) {
+            const c = this.arrays.a_color.data;
+            this.color = [c[0], c[1], c[2], 1.0];
+        }
         }
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.arrays);
         this.vao = twgl.createVAOFromBufferInfo(gl, programInfo, this.bufferInfo);

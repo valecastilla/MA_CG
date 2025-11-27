@@ -16,6 +16,9 @@ uniform mat4 u_worldViewProjection;
 out vec3 v_normal; // output
 out vec3 v_surfaceToLight[numLights];
 out vec3 v_surfaceToView;
+// Distancia luz a objeto
+out float v_lightDist2[numLights];
+
 
 void main() {
     // Transform the position of the vertices
@@ -30,7 +33,12 @@ void main() {
 
     // Direction from the surface to the light
     for (int i = 0; i < numLights; i++){
-            v_surfaceToLight[i] = u_lightWorldPosition[i] - surfaceWoldPosition;
+        vec3 toLight = u_lightWorldPosition[i] - surfaceWoldPosition;
+
+        v_surfaceToLight[i] = toLight;
+
+        // squared distance
+        v_lightDist2[i] = dot(toLight, toLight);
 
     }
 

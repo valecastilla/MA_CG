@@ -1,7 +1,7 @@
 #version 300 es
 precision highp float;
 
-const int NUM_LIGHTS = 3;
+const int NUM_LIGHTS = 25;
 
 in vec4 v_position;
 in vec3 v_normal;
@@ -47,7 +47,7 @@ void main() {
 
     for (int i=0; i<NUM_LIGHTS; i++) {
         // attenuation
-        float distance = length(u_lightWorldPosition[i] - v_position.xyz);
+        float distance = length(v_surfaceToLight[i]);
         float attenuation = 1.0 / (u_constant + u_linear * distance + u_quadratic * (distance * distance));
 
         vec3 surfToLigthDirection = normalize(v_surfaceToLight[i]);
@@ -63,8 +63,13 @@ void main() {
             specular = pow(max(specular_dot, 0.0), u_shininess);
         }
 
-        diffuseColor += (light * color * u_diffuseLight[i]) * attenuation;
-        specularColor += (specular * color * u_specularLight[i]) * attenuation;
+        if (i > 0) {
+            diffuseColor += (light * color * u_diffuseLight[i]) * attenuation;
+            specularColor += (specular * color * u_specularLight[i]) * attenuation;
+        } else {
+            diffuseColor += (light * color * u_diffuseLight[i]);
+            specularColor += (specular * color * u_specularLight[i]);
+        }
     }
 
     // Use the color of the texture on the object
