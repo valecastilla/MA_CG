@@ -7,61 +7,66 @@
  * 2025-11-08
  */
 
+"use strict";
 
-'use strict';
+import * as twgl from "twgl-base.js";
+import GUI from "lil-gui";
+import { M4 } from "../libs/3d-lib";
+import { Scene3D } from "../libs/scene3d";
+import { generateConeOBJ } from "../libs/cg2.js";
+import { Object3D } from "../libs/object3d";
+import { Light3D } from "../libs/light3d";
+import { Camera3D } from "../libs/camera3d";
 
-import * as twgl from 'twgl-base.js';
-import GUI from 'lil-gui';
-import { M4 } from '../libs/3d-lib';
-import { Scene3D } from '../libs/scene3d';
-import { generateConeOBJ } from '../libs/cg2.js';
-import { Object3D } from '../libs/object3d';
-import { Light3D } from '../libs/light3d';
-import { Camera3D } from '../libs/camera3d';
-
-import { loadMtl } from '../libs/obj_loader.js';
-//import 
+import { loadMtl } from "../libs/obj_loader.js";
+//import
 
 // Functions and arrays for the communication with the API
 import {
-  agents, obstacles, trafficLights, 
-  destinations, roads, initAgentsModel,
-  update, getAgents, getObstacles, 
-  getTrafficLights, getDestinations, getRoads
-} from '../libs/api_connection.js';
+  agents,
+  obstacles,
+  trafficLights,
+  destinations,
+  roads,
+  initAgentsModel,
+  update,
+  getAgents,
+  getObstacles,
+  getTrafficLights,
+  getDestinations,
+  getRoads,
+} from "../libs/api_connection.js";
 
 // Define the shader code, using GLSL 3.00
 //import vsGLSL from '../assets/shaders/vs_color.glsl?raw';
 //import fsGLSL from '../assets/shaders/fs_color.glsl?raw';
 
-import vsGLSL from '../assets/shaders/vs_phong_302.glsl?raw';
-import fsGLSL from '../assets/shaders/fs_phong_302.glsl?raw';
+import vsGLSL from "../assets/shaders/vs_phong_302.glsl?raw";
+import fsGLSL from "../assets/shaders/fs_phong_302.glsl?raw";
 
 // Chatgpt function to convert file into string
 function loadText(path) {
   const xhr = new XMLHttpRequest();
-  xhr.open("GET", path, false);  // false = synchronous
+  xhr.open("GET", path, false); // false = synchronous
   xhr.send(null);
   return xhr.status >= 200 && xhr.status < 300 ? xhr.responseText : "";
 }
 
-
-
-const objTextDestination = loadText("../assets/obj/3d/canasta/Cana.obj");
-import destinationMltText from '../assets/obj/3d/canasta/canasta.mtl?raw';
+const objTextDestination = loadText("../assets/obj/3d/canasta/canasta1.obj");
+import destinationMltText from "../assets/obj/3d/canasta/canasta.mtl?raw";
 
 // Create vec to store obstacles objects to then chose them randomly
 let obstacleObjects = [];
 const objTextObstacle1 = loadText("../assets/obj/3d/edificios/arbol1.obj");
-import obstacle1MltText from '../assets/obj/3d/edificios/arbol1.mtl?raw';
+import obstacle1MltText from "../assets/obj/3d/edificios/arbol1.mtl?raw";
 obstacleObjects.push(objTextObstacle1);
 
 const objTextObstacle2 = loadText("../assets/obj/3d/edificios/arbol2.obj");
-import obstacle2MltText from '../assets/obj/3d/edificios/arbol2.mtl?raw';
+import obstacle2MltText from "../assets/obj/3d/edificios/arbol2.mtl?raw";
 obstacleObjects.push(objTextObstacle2);
 
 const objTextObstacle3 = loadText("../assets/obj/3d/edificios/arbol3.obj");
-import obstacle3MltText from '../assets/obj/3d/edificios/arbol3.mtl?raw';
+import obstacle3MltText from "../assets/obj/3d/edificios/arbol3.mtl?raw";
 obstacleObjects.push(objTextObstacle3);
 
 // const objTextObstacle4 = loadText("../assets/obj/3d/edificios/maleza.obj");
@@ -69,7 +74,7 @@ obstacleObjects.push(objTextObstacle3);
 // obstacleObjects.push(objTextObstacle4);
 
 const objTextObstacle5 = loadText("../assets/obj/3d/edificios/roca1.obj");
-import obstacle5MltText from '../assets/obj/3d/edificios/roca1.mtl?raw';
+import obstacle5MltText from "../assets/obj/3d/edificios/roca1.mtl?raw";
 obstacleObjects.push(objTextObstacle5);
 
 // const objTextObstacle6 = loadText("../assets/obj/3d/edificios/roca2.obj");
@@ -77,23 +82,24 @@ obstacleObjects.push(objTextObstacle5);
 // obstacleObjects.push(objTextObstacle6);
 
 const objTextObstacle7 = loadText("../assets/obj/3d/edificios/roca3.obj");
-import obstacle7MltText from '../assets/obj/3d/edificios/roca3.mtl?raw';
+import obstacle7MltText from "../assets/obj/3d/edificios/roca3.mtl?raw";
 obstacleObjects.push(objTextObstacle7);
 
 const objTextObstacle8 = loadText("../assets/obj/3d/edificios/tronco.obj");
-import obstacle8MltText from '../assets/obj/3d/edificios/tronco.mtl?raw';
+import obstacle8MltText from "../assets/obj/3d/edificios/tronco.mtl?raw";
 obstacleObjects.push(objTextObstacle8);
 
+// Traffic Agents
+const objTextTraffic = loadText("../assets/obj/3d/trafficlight/semaforo.obj");
+//import obstacle8MltText from '../assets/obj/3d/edificios/tronco.mtl?raw';
 
 // Agents
 let agentObjects = [];
 const objTextAgent1 = loadText("../assets/obj/3d/huevos/huevo1.obj");
-import agent1MltText from '../assets/obj/3d/edificios/tronco.mtl?raw';
+import agent1MltText from "../assets/obj/3d/edificios/tronco.mtl?raw";
 agentObjects.push(objTextAgent1);
 
 const baseCube = new Object3D(-1);
-
-
 
 const scene = new Scene3D();
 
@@ -109,7 +115,6 @@ const settings = {
 };
 */
 
-
 // Global variables
 let phongProgramInfo = undefined;
 let gl = undefined;
@@ -117,12 +122,11 @@ const duration = 1000; // ms
 let elapsed = 0;
 let then = 0;
 
-
 // Main function is async to be able to make the requests
 async function main() {
   // Setup the canvas area
-  const canvas = document.querySelector('canvas');
-  gl = canvas.getContext('webgl2');
+  const canvas = document.querySelector("canvas");
+  gl = canvas.getContext("webgl2");
   twgl.resizeCanvasToDisplaySize(gl.canvas);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -139,7 +143,6 @@ async function main() {
   await getDestinations();
   await getRoads();
 
-
   // Initialize the scene
   setupScene();
 
@@ -153,36 +156,38 @@ async function main() {
   drawScene();
 }
 
-
-
 function setupScene() {
-  let camera = new Camera3D(0,
-    10,             // Distance to target
-    4,              // Azimut
-    0.8,              // Elevation
+  let camera = new Camera3D(
+    0,
+    10, // Distance to target
+    4, // Azimut
+    0.8, // Elevation
     [0, 0, 10],
-    [0, 0, 0]);
+    [0, 0, 0]
+  );
   // These values are empyrical.
   // Maybe find a better way to determine them
   camera.panOffset = [0, 8, 0];
   scene.setCamera(camera);
   scene.camera.setupControls();
 
-  let light = new Light3D(0, [3, 3, 5],              // Position
-                             [0.3, 0.3, 0.3, 1.0],   // Ambient
-                             [1.0, 1.0, 1.0, 1.0],   // Diffuse
-                             [1.0, 1.0, 1.0, 1.0]);  // Specular
+  let light = new Light3D(
+    0,
+    [3, 3, 5], // Position
+    [0.3, 0.3, 0.3, 1.0], // Ambient
+    [1.0, 1.0, 1.0, 1.0], // Diffuse
+    [1.0, 1.0, 1.0, 1.0]
+  ); // Specular
 
-  
   scene.addLight(light);
 
-   // Traffic lights as lights
+  // Traffic lights as lights
   const numLights = 25;
   let nextLightIndex = 1; // 0 is the sun
 
   for (const tl of trafficLights) {
     if (nextLightIndex >= numLights) {
-      break; 
+      break;
     }
 
     // Get color for light from current state
@@ -190,19 +195,13 @@ function setupScene() {
       ? [0.0, 1.0, 0.0, 1.0] // green
       : [1.0, 0.0, 0.0, 1.0]; // red
 
-    const ambient  = [0.0, 0.0, 0.0, 1.0];  
-    const diffuse  = baseColor; // color dependent on state
+    const ambient = [0.0, 0.0, 0.0, 1.0];
+    const diffuse = baseColor; // color dependent on state
     const specular = [1.0, 1.0, 1.0, 1.0];
 
     const pos = [tl.position.x, tl.position.y, tl.position.z];
 
-    const light = new Light3D(
-      nextLightIndex,
-      pos,
-      ambient,
-      diffuse,
-      specular
-    );
+    const light = new Light3D(nextLightIndex, pos, ambient, diffuse, specular);
 
     // Save which traffic light this light belongs to
     light.trafficId = tl.id;
@@ -251,12 +250,14 @@ function setupObjects(scene, gl, programInfo) {
   obstacleObjects3d.push(obstacle6);
   //loadMtl(destinationMltText);
 
+  // Traffic Light
+  const trafficLObj = new Object3D(-3, [1, 5, 1]);
+  trafficLObj.prepareVAO(gl, programInfo, objTextTraffic);
+
   // Destination
   //loadMtl(destinationMltText);
   const destinationObj = new Object3D(-4);
   destinationObj.prepareVAO(gl, programInfo, objTextDestination);
-  console.log("arbol1 base color:", obstacle1.color);
-  
 
   /*
   // A scaled cube to use as the ground
@@ -296,51 +297,43 @@ function setupObjects(scene, gl, programInfo) {
       agent.color = [0.55, 0.27, 0.07, 1.0];
       //agent.translation = { x: 0, y: 3, z: 0 };
     }
-    // Arbol 
+    // Arbol
     else if (index == 0) {
       agent.scale = { x: 0.35, y: 0.35, z: 0.35 };
-      agent.color = obstacleObjects3d[index].color; 
-    }
-    else if (index == 1) {
+      agent.color = [34 / 255, 139 / 255, 50 / 255, 1.0];
+    } else if (index == 1) {
       agent.scale = { x: 0.5, y: 0.4, z: 0.5 };
-      //agent.color = [34/255, 139/255, 34/255, 1.0]; 
-    }
-    else if (index == 2) {
+      agent.color = [34 / 255, 139 / 255, 34 / 255, 1.0];
+    } else if (index == 2) {
       agent.scale = { x: 0.55, y: 0.5, z: 0.55 };
-      agent.color = [98/255, 109/255, 88/255, 1.0]; 
-    }
-    else if (index == 3) {
+      agent.color = [98 / 255, 109 / 255, 88 / 255, 1.0];
+    } else if (index == 3) {
       agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
-      agent.color = [116/255, 117/255, 120/255, 1.0];
-    }
-    else if (index == 4) {
+      agent.color = [116 / 255, 117 / 255, 120 / 255, 1.0];
+    } else if (index == 4) {
       agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
-      agent.color = [116/255, 109/255, 117/255, 1.0]; 
+      agent.color = [116 / 255, 109 / 255, 117 / 255, 1.0];
     }
     scene.addObject(agent);
   }
 
   for (const agent of trafficLights) {
-    const trafficLightObj = new Object3D(-3);
-    trafficLightObj.prepareVAO(gl, programInfo);
-
-    agent.arrays = trafficLightObj.arrays;
-    agent.bufferInfo = trafficLightObj.bufferInfo;
-    agent.vao = trafficLightObj.vao;
-    agent.scale = { x: 0.3, y: 1.0, z: 0.3 };
-
+    agent.arrays = trafficLObj.arrays;
+    agent.bufferInfo = trafficLObj.bufferInfo;
+    agent.vao = trafficLObj.vao;
+    agent.scale = { x: 2.0, y: 2.0, z: 2.0 };
+    agent.translation = { x: 0.0, y: 1.5, z: 0.0 };
     agent.color = agent.state
-        ? [0.0, 1.0, 0.0, 1.0]  // green
-        : [1.0, 0.0, 0.0, 1.0];  // red
+      ? [0.0, 1.0, 0.0, 1.0] // green
+      : [1.0, 0.0, 0.0, 1.0]; // red
     scene.addObject(agent);
   }
 
   for (const agent of destinations) {
-
     agent.arrays = destinationObj.arrays;
     agent.bufferInfo = destinationObj.bufferInfo;
     agent.vao = destinationObj.vao;
-
+    agent.translation = { x: 0.0, y: 0.1, z: 0.0 };
     //agent.color = destinationObj.color;
     agent.scale = { x: 0.0075, y: 0.0075, z: 0.0075 };
     scene.addObject(agent);
@@ -353,11 +346,10 @@ function setupObjects(scene, gl, programInfo) {
     agent.arrays = roadObj.arrays;
     agent.bufferInfo = roadObj.bufferInfo;
     agent.vao = roadObj.vao;
-    agent.scale = {x: 50, y: 0.1, z: 50};
-    agent.color = [49/255, 233/255, 150/255, 1.0];
+    agent.scale = { x: 50, y: 0.1, z: 50 };
+    agent.color = [49 / 255, 233 / 255, 150 / 255, 1.0];
     scene.addObject(agent);
   }
-
 }
 
 // Draw an object with its corresponding transformations
@@ -366,7 +358,32 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   let v3_tra = object.posArray;
   let v3_sca = object.scaArray;
 
-  
+  if (
+    object.oldPosArray &&
+    object.posArray &&
+    object.oldPosArray != object.posArray
+  ) {
+    const a = object.oldPosArray; // old position
+    const b = object.posArray; // new position
+
+    v3_tra = [
+      a[0] + (b[0] - a[0]) * fract,
+      object.oldPosArray[1],
+      a[2] + (b[2] - a[2]) * fract,
+    ];
+  } else {
+    // Static objects
+    v3_tra = object.posArray;
+  }
+
+  if (object.translation) {
+    v3_tra = [
+      v3_tra[0] + object.translation.x,
+      v3_tra[1] + object.translation.y,
+      v3_tra[2] + object.translation.z,
+    ];
+  }
+
   /* // Animate the rotation of the objects
   object.rotDeg.x = (object.rotDeg.x + settings.rotationSpeed.x * fract) % 360;
   object.rotDeg.y = (object.rotDeg.y + settings.rotationSpeed.y * fract) % 360;
@@ -374,7 +391,6 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   object.rotRad.x = object.rotDeg.x * Math.PI / 180;
   object.rotRad.y = object.rotDeg.y * Math.PI / 180;
   object.rotRad.z = object.rotDeg.z * Math.PI / 180; */
- 
 
   // Create the individual transform matrices
   const scaMat = M4.scale(v3_sca);
@@ -409,7 +425,7 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
     u_diffuseColor: object.color,
     u_specularColor: object.color,
     u_shininess: object.shininess,
-  }
+  };
   twgl.setUniforms(programInfo, objectUniforms);
 
   gl.bindVertexArray(object.vao);
@@ -453,14 +469,14 @@ async function drawScene() {
   }
 
   for (const tl of trafficLights) {
-    const light = scene.lights.find(l => l.trafficId === tl.id); 
+    const light = scene.lights.find((l) => l.trafficId === tl.id);
     if (!light) continue;
 
     const baseColor = tl.state
       ? [0.0, 1.0, 0.0, 1.0] // green
       : [1.0, 0.0, 0.0, 1.0]; // red
 
-    light.ambient =  [0.0, 0.0, 0.0, 0.0];
+    light.ambient = [0.0, 0.0, 0.0, 0.0];
 
     light.diffuse = [0.0, 0.0, 0.0, 0.0];
     // specular stay white
@@ -468,8 +484,8 @@ async function drawScene() {
 
   const numLights = 25;
   const lightPositions = [];
-  const ambientLights  = [];
-  const diffuseLights  = [];
+  const ambientLights = [];
+  const diffuseLights = [];
   const specularLights = [];
 
   for (let i = 0; i < numLights; i++) {
@@ -479,28 +495,28 @@ async function drawScene() {
       lightPositions.push(
         light.posArray[0],
         light.posArray[1],
-        light.posArray[2],
+        light.posArray[2]
       );
 
       ambientLights.push(
         light.ambient[0],
         light.ambient[1],
         light.ambient[2],
-        light.ambient[3],
+        light.ambient[3]
       );
 
       diffuseLights.push(
         light.diffuse[0],
         light.diffuse[1],
         light.diffuse[2],
-        light.diffuse[3],
+        light.diffuse[3]
       );
 
       specularLights.push(
         light.specular[0],
         light.specular[1],
         light.specular[2],
-        light.specular[3],
+        light.specular[3]
       );
     } else {
       // If no more lights
@@ -513,13 +529,13 @@ async function drawScene() {
 
   const globalUniforms = {
     u_viewWorldPosition: scene.camera.posArray,
-    u_lightWorldPosition: lightPositions,  
-    u_ambientLight: ambientLights,         
+    u_lightWorldPosition: lightPositions,
+    u_ambientLight: ambientLights,
     u_diffuseLight: diffuseLights,
     u_specularLight: specularLights,
   };
 
-    twgl.setUniforms(phongProgramInfo, globalUniforms);
+  twgl.setUniforms(phongProgramInfo, globalUniforms);
 
   // Update the scene after the elapsed duration
   if (elapsed >= duration) {
@@ -532,7 +548,7 @@ async function drawScene() {
 
 function setupViewProjection(gl) {
   // Field of view of 60 degrees vertically, in radians
-  const fov = 60 * Math.PI / 180;
+  const fov = (60 * Math.PI) / 180;
   const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
   // Matrices for the world view
