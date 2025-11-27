@@ -15,7 +15,6 @@ class Traffic_Light(FixedAgent):
             timeToChange: After how many step should the traffic light change color 
         """
         super().__init__(model)
-        print("se creo semaforo")
         self.cell = cell
         self.state = state
         self.timeToChange = timeToChange
@@ -40,24 +39,8 @@ class Destination(FixedAgent):
         """
         super().__init__(model)
         self.cell = cell
-        self.esNodo= False
 
 class Obstacle(FixedAgent):
-    """
-    Obstacle agent. Just to add obstacles to the grid.
-    """
-    def __init__(self, model, cell):
-        """
-        Creates a new obstacle.
-        
-        Args:
-            model: Model reference for the agent
-            cell: The initial position of the agent
-        """
-        super().__init__(model)
-        self.cell = cell
-
-class Tierra(FixedAgent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
@@ -77,7 +60,6 @@ class Intersection(FixedAgent):
     Obstacle agent. Just to add obstacles to the grid.
     """
     def __init__(self, model, cell):
-        self.isNodo=False
         """
         Creates a new obstacle.
         
