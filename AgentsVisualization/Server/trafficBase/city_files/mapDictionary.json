@@ -6,17 +6,5 @@
     "#" : "Obstacle",
     "v" : "Down",
     "^" : "Up",
-    "D" : "Destination",
-    "←" : "LeftInter",
-    "↑" : "UpInter",
-    "→" : "RightInter",
-    "↓" : "DownInter",
-    "⬅": "semaforoIzquierda",
-    "⮕": "semaforoDerecha",
-    "⬆": "semaforoArriba",
-    "⬇": "semaforoAbajo"
-
-
-
-
+    "D" : "Destination"
 }
