@@ -37,12 +37,11 @@ import {
   getRoads,
 } from "../libs/api_connection.js";
 
-// Define the shader code, using GLSL 3.00
-//import vsGLSL from '../assets/shaders/vs_color.glsl?raw';
-//import fsGLSL from '../assets/shaders/fs_color.glsl?raw';
-
 import vsGLSL from "../assets/shaders/vs_phong_302.glsl?raw";
 import fsGLSL from "../assets/shaders/fs_phong_302.glsl?raw";
+
+//import vsGLSL from "../assets/shaders/vs_multi_lights_attenuation.glsl?raw";
+//import fsGLSL from "../assets/shaders/fs_multi_lights_attenuation.glsl?raw";
 
 // Chatgpt function to convert file into string
 function loadText(path) {
@@ -98,6 +97,10 @@ let agentObjects = [];
 const objTextAgent1 = loadText("../assets/obj/3d/huevos/huevo1.obj");
 import agent1MltText from "../assets/obj/3d/edificios/tronco.mtl?raw";
 agentObjects.push(objTextAgent1);
+
+// Road
+const objTextRoad = loadText("../assets/obj/3d/roads/grass.obj");
+import roadMltText from "../assets/obj/3d/grass.mtl?raw";
 
 const baseCube = new Object3D(-1);
 
@@ -259,6 +262,11 @@ function setupObjects(scene, gl, programInfo) {
   const destinationObj = new Object3D(-4);
   destinationObj.prepareVAO(gl, programInfo, objTextDestination);
 
+  // Roads
+  loadMtl(roadMltText);
+  const roadObj = new Object3D(-5);
+  roadObj.prepareVAO(gl, programInfo, objTextRoad);
+
   /*
   // A scaled cube to use as the ground
   const ground = new Object3D(-3, [14, 0, 14]);
@@ -340,16 +348,24 @@ function setupObjects(scene, gl, programInfo) {
   }
 
   for (const agent of roads) {
-    const roadObj = new Object3D(-5, [14, 0, 14]);
-    roadObj.prepareVAO(gl, programInfo);
+  //   const roadObj = new Object3D(-5, [14, 0, 14]);
+  //   roadObj.prepareVAO(gl, programInfo);
 
+  //   agent.arrays = roadObj.arrays;
+  //   agent.bufferInfo = roadObj.bufferInfo;
+  //   agent.vao = roadObj.vao;
+  //   agent.scale = { x: 50, y: 0.1, z: 50 };
+  //   agent.color = [49 / 255, 233 / 255, 150 / 255, 1.0];
+  //   scene.addObject(agent);
+  // }
     agent.arrays = roadObj.arrays;
     agent.bufferInfo = roadObj.bufferInfo;
     agent.vao = roadObj.vao;
-    agent.scale = { x: 50, y: 0.1, z: 50 };
-    agent.color = [49 / 255, 233 / 255, 150 / 255, 1.0];
+    agent.translation = { x: 0.0, y: -0.4, z: 0.0 };
+    agent.scale = { x: 0.075, y: 0.01, z: 0.075 };
+    agent.color = roadObj.color;
     scene.addObject(agent);
-  }
+}
 }
 
 // Draw an object with its corresponding transformations
@@ -579,5 +595,6 @@ function setupUI() {
       .decimals(2)
   */
 }
+
 
 main();
