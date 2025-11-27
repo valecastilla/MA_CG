@@ -360,8 +360,7 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
 
   if (
     object.oldPosArray &&
-    object.posArray &&
-    object.oldPosArray != object.posArray
+    object.posArray
   ) {
     const a = object.oldPosArray; // old position
     const b = object.posArray; // new position
@@ -476,9 +475,9 @@ async function drawScene() {
       ? [0.0, 1.0, 0.0, 1.0] // green
       : [1.0, 0.0, 0.0, 1.0]; // red
 
-    light.ambient = [0.0, 0.0, 0.0, 0.0];
+    light.ambient = [0.2, 0.2, 0.2, 1.0];
 
-    light.diffuse = [0.0, 0.0, 0.0, 0.0];
+    light.diffuse = baseColor;
     // specular stay white
   }
 

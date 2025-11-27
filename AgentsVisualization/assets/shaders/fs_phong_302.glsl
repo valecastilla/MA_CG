@@ -30,6 +30,19 @@ void main() {
     vec4 specularAccum = vec4(0.0);
 
     for (int i = 0; i < numLights; ++i) {
+        // Distancia ** 2 easier than distance
+        float dist2 = v_lightDist2[i];
+
+        // Max radius where light affects
+        float maxRadius  = 2.0;           
+        float maxRadius2 = maxRadius * maxRadius;
+
+        // If its outside radius, dont affect
+        if (dist2 > maxRadius2 && i > 0) {
+            continue;
+        }
+
+
         vec3 surfToLightDirection = normalize(v_surfaceToLight[i]);
 
         // Reflection vector
@@ -39,7 +52,10 @@ void main() {
         float diffuse  = max(dot(normal, surfToLightDirection), 0.0);
         float specular = pow(max(dot(r, surfToViewDirection), 0.0), u_shininess);
 
-        float attenuation = 1.0 / (1.0 + 0.1 * v_lightDist2[i]);
+        if (i > 0) {
+            float attenuation = 1.0 - dist2 / maxRadius2; // Get a value between 0-1 depending on how close or far to radius
+            attenuation = clamp(attenuation, 0.0, 1.0); // If value of attenuation is not between 0-1, change it
+        }
 
         ambientAccum  += u_ambientLight[i]  * u_ambientColor;
         diffuseAccum  += u_diffuseLight[i]  * u_diffuseColor  * diffuse;
