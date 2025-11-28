@@ -1,6 +1,7 @@
 #version 300 es
 in vec4 a_position; // input | atributos unicos a cada vertice
 in vec3 a_normal;
+in vec4 a_color;
 
 // Scene uniforms
 const int numLights = 25;
@@ -18,6 +19,7 @@ out vec3 v_surfaceToLight[numLights];
 out vec3 v_surfaceToView;
 // Distancia luz a objeto
 out float v_lightDist2[numLights];
+out vec4 v_color;
 
 
 void main() {
@@ -44,4 +46,6 @@ void main() {
 
     // Direction from the surface to the view
     v_surfaceToView = u_viewWorldPosition - surfaceWoldPosition;
+
+    v_color = a_color;
 }

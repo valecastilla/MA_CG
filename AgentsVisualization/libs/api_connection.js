@@ -95,9 +95,9 @@ async function getAgents() {
                     } else {
                         // Regular update
                         current_agent.oldPosArray = current_agent.posArray;
-                        console.log("Current agent id:", current_agent.id, "oldPosArray:", current_agent.oldPosArray);
+                        //console.log("Current agent id:", current_agent.id, "oldPosArray:", current_agent.oldPosArray);
                         current_agent.position = { x: agent.x, y: agent.y, z: agent.z };
-                        console.log("Updated agent id:", current_agent.id, "new posArray:", current_agent.posArray);
+                        //console.log("Updated agent id:", current_agent.id, "new posArray:", current_agent.posArray);
                     }
                 }
             }

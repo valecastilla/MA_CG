@@ -56,37 +56,41 @@ import destinationMltText from "../assets/obj/3d/canasta/canasta.mtl?raw";
 
 // Create vec to store obstacles objects to then chose them randomly
 let obstacleObjects = [];
-const objTextObstacle1 = loadText("../assets/obj/3d/edificios/arbol1.obj");
-import obstacle1MltText from "../assets/obj/3d/edificios/arbol1.mtl?raw";
+const objTextObstacle1 = loadText("../assets/obj/3d/arbol1.obj");
+import obstacle1MltText from "../assets/obj/3d/arbol1.mtl?raw";
 obstacleObjects.push(objTextObstacle1);
 
-const objTextObstacle2 = loadText("../assets/obj/3d/edificios/arbol2.obj");
-import obstacle2MltText from "../assets/obj/3d/edificios/arbol2.mtl?raw";
+const objTextObstacle2 = loadText("../assets/obj/3d/arboles/arbol2.obj");
+import obstacle2MltText from "../assets/obj/3d/arboles/arbol2.mtl?raw";
 obstacleObjects.push(objTextObstacle2);
 
-const objTextObstacle3 = loadText("../assets/obj/3d/edificios/arbol3.obj");
-import obstacle3MltText from "../assets/obj/3d/edificios/arbol3.mtl?raw";
+const objTextObstacle3 = loadText("../assets/obj/3d/arboles/arbol3.obj");
+import obstacle3MltText from "../assets/obj/3d/arboles/arbol3.mtl?raw";
 obstacleObjects.push(objTextObstacle3);
 
-// const objTextObstacle4 = loadText("../assets/obj/3d/edificios/maleza.obj");
-// import obstacle4MltText from '../assets/obj/3d/edificios/maleza.mtl?raw';
-// obstacleObjects.push(objTextObstacle4);
+const objTextObstacle4 = loadText("../assets/obj/3d/arboles/arbol4.obj");
+import obstacle4MltText from '../assets/obj/3d/arboles/arbol4.mtl?raw';
+obstacleObjects.push(objTextObstacle4);
 
-const objTextObstacle5 = loadText("../assets/obj/3d/edificios/roca1.obj");
-import obstacle5MltText from "../assets/obj/3d/edificios/roca1.mtl?raw";
+const objTextObstacle5 = loadText("../assets/obj/3d/arboles/arbol5.obj");
+import obstacle5MltText from "../assets/obj/3d/arboles/arbol5.mtl?raw";
 obstacleObjects.push(objTextObstacle5);
 
-// const objTextObstacle6 = loadText("../assets/obj/3d/edificios/roca2.obj");
-// import obstacle6MltText from '../assets/obj/3d/edificios/roca2.mtl?raw';
-// obstacleObjects.push(objTextObstacle6);
+const objTextObstacle6 = loadText("../assets/obj/3d/arboles/arbol6.obj");
+import obstacle6MltText from '../assets/obj/3d/arboles/arbol6.mtl?raw';
+obstacleObjects.push(objTextObstacle6);
 
-const objTextObstacle7 = loadText("../assets/obj/3d/edificios/roca3.obj");
-import obstacle7MltText from "../assets/obj/3d/edificios/roca3.mtl?raw";
+const objTextObstacle7 = loadText("../assets/obj/3d/arboles/arbol7.obj");
+import obstacle7MltText from "../assets/obj/3d/arboles/arbol7.mtl?raw";
 obstacleObjects.push(objTextObstacle7);
 
-const objTextObstacle8 = loadText("../assets/obj/3d/edificios/tronco.obj");
-import obstacle8MltText from "../assets/obj/3d/edificios/tronco.mtl?raw";
+const objTextObstacle8 = loadText("../assets/obj/3d/arboles/arbol8.obj");
+import obstacle8MltText from "../assets/obj/3d/arboles/arbol8.mtl?raw";
 obstacleObjects.push(objTextObstacle8);
+
+const objTextObstacle9 = loadText("../assets/obj/3d/arboles/arbol9.obj");
+import obstacle9MltText from "../assets/obj/3d/arboles/arbol9.mtl?raw";
+obstacleObjects.push(objTextObstacle9);
 
 // Traffic Agents
 const objTextTraffic = loadText("../assets/obj/3d/trafficlight/semaforo.obj");
@@ -180,11 +184,11 @@ function setupScene() {
 
   let light = new Light3D(
     0,
-    [3, 3, 5], // Position
-    [0.3, 0.3, 0.3, 1.0], // Ambient
-    [1.0, 1.0, 1.0, 1.0], // Diffuse
-    [1.0, 1.0, 1.0, 1.0]
-  ); // Specular
+    [3, 4, 5],              // put the sun higher over the scene
+    [1.0, 1.0, 1.0, 1.0],   // strong ambient light
+    [6, 6, 6, 1.0],   // very bright diffuse
+    [1.0, 1.0, 1.0, 1.0]    // specular stays the same
+  );
 
   scene.addLight(light);
 
@@ -239,22 +243,35 @@ function setupObjects(scene, gl, programInfo) {
   const obstacle2 = new Object3D(-2);
   obstacle2.prepareVAO(gl, programInfo, obstacleObjects[1]);
   obstacleObjects3d.push(obstacle2);
-  //loadMtl(obstacle3MltText);
+  loadMtl(obstacle3MltText);
   const obstacle3 = new Object3D(-2);
   obstacle3.prepareVAO(gl, programInfo, obstacleObjects[2]);
   obstacleObjects3d.push(obstacle3);
-  //loadMtl(obstacle5MltText);
+  loadMtl(obstacle4MltText);
   const obstacle4 = new Object3D(-2);
   obstacle4.prepareVAO(gl, programInfo, obstacleObjects[3]);
   obstacleObjects3d.push(obstacle4);
-  //loadMtl(obstacle7MltText);
+  loadMtl(obstacle5MltText);
   const obstacle5 = new Object3D(-2);
   obstacle5.prepareVAO(gl, programInfo, obstacleObjects[4]);
   obstacleObjects3d.push(obstacle5);
-  //loadMtl(obstacle8MltText);
+  loadMtl(obstacle6MltText);
   const obstacle6 = new Object3D(-2);
   obstacle6.prepareVAO(gl, programInfo, obstacleObjects[5]);
   obstacleObjects3d.push(obstacle6);
+  loadMtl(obstacle7MltText);
+  const obstacle7 = new Object3D(-2);
+  obstacle7.prepareVAO(gl, programInfo, obstacleObjects[6]);
+  obstacleObjects3d.push(obstacle7);
+  loadMtl(obstacle8MltText);
+  const obstacle8 = new Object3D(-2);
+  obstacle8.prepareVAO(gl, programInfo, obstacleObjects[7]);
+  obstacleObjects3d.push(obstacle8);
+  loadMtl(obstacle9MltText);
+  const obstacle9 = new Object3D(-2);
+  obstacle9.prepareVAO(gl, programInfo, obstacleObjects[8]);
+  obstacleObjects3d.push(obstacle9);
+
   //loadMtl(destinationMltText);
 
   // Traffic Light
@@ -304,28 +321,43 @@ function setupObjects(scene, gl, programInfo) {
     //agent.color = [0.0, 0.0, 1.0, 1.0];
 
     agent.scale = { x: 0.1, y: 0.1, z: 0.1 };
-    if (index == 5) {
-      agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
-      // Make tronco colored brown
-      agent.color = [0.55, 0.27, 0.07, 1.0];
-      //agent.translation = { x: 0, y: 3, z: 0 };
+    agent.color = baseObstacleObject.color;
+    // if (index == 5) {
+    //   agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
+    //   // Make tronco colored brown
+    //   agent.color = [0.55, 0.27, 0.07, 1.0];
+    //   //agent.translation = { x: 0, y: 3, z: 0 };
+    // }
+    // // Arbol
+    if (index == 0) {
+      agent.scale = { x: 0.03, y: 0.08, z: 0.05 };
+      agent.translation = { x: 0.0, y: -0.5, z: 0.0 };
+    } 
+    else if (index == 1) {
+      agent.scale = { x: 0.3, y: 0.3, z: 0.3 };
+     } 
+    else if (index == 2) {
+      agent.scale = { x: 0.18, y: 0.2, z: 0.18 };
+      agent.translation = { x: 0.0, y: -0.5, z: 0.0 };
+    } 
+    else if (index == 3) {
+      agent.scale = { x: 0.1, y: 0.13, z: 0.15 };
+    } 
+    else if (index == 4) {
+      agent.scale = { x: 0.3, y: 0.3, z: 0.3 };
     }
-    // Arbol
-    else if (index == 0) {
-      agent.scale = { x: 0.35, y: 0.35, z: 0.35 };
-      agent.color = [34 / 255, 139 / 255, 50 / 255, 1.0];
-    } else if (index == 1) {
-      agent.scale = { x: 0.5, y: 0.4, z: 0.5 };
-      agent.color = [34 / 255, 139 / 255, 34 / 255, 1.0];
-    } else if (index == 2) {
-      agent.scale = { x: 0.55, y: 0.5, z: 0.55 };
-      agent.color = [98 / 255, 109 / 255, 88 / 255, 1.0];
-    } else if (index == 3) {
-      agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
-      agent.color = [116 / 255, 117 / 255, 120 / 255, 1.0];
-    } else if (index == 4) {
-      agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
-      agent.color = [116 / 255, 109 / 255, 117 / 255, 1.0];
+    else if (index == 5) {
+      agent.scale = { x: 0.09, y: 0.12, z: 0.09 };
+      agent.translation = { x: 0.0, y: -0.5, z: 0.0 };
+    }
+    else if (index == 6) {
+      agent.scale = { x: 0.4, y: 0.45, z: 0.4 };
+    }
+    else if (index == 7) {
+      agent.scale = { x: 0.3, y: 0.35, z: 0.3 };
+    }
+    else if (index == 8) {
+      agent.scale = { x: 0.4, y: 0.4, z: 0.4 };
     }
     scene.addObject(agent);
   }
@@ -367,7 +399,8 @@ function setupObjects(scene, gl, programInfo) {
     agent.bufferInfo = roadObj.bufferInfo;
     agent.vao = roadObj.vao;
     agent.translation = { x: 0.0, y: -0.4, z: 0.0 };
-    agent.scale = { x: 0.075, y: 0.01, z: 0.075 };
+    //agent.scale = { x: 0.065, y: 0.01, z: 0.065 };
+    agent.scale = { x: 1, y: 0.01, z: 1 };
     agent.color = roadObj.color;
     scene.addObject(agent);
 }
@@ -552,12 +585,9 @@ async function drawScene() {
   const globalUniforms = {
     u_viewWorldPosition: scene.camera.posArray,
     u_lightWorldPosition: lightPositions,
-    u_ambientLight: ambientLight,
+    u_ambientLight: ambientLights,
     u_diffuseLight: diffuseLights,
     u_specularLight: specularLights,
-    u_constant: 1.0,
-    u_linear: 0.09,
-    u_quadratic: 0.032,
   };
 
   twgl.setUniforms(phongProgramInfo, globalUniforms);

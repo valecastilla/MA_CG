@@ -7,6 +7,7 @@ in vec3 v_normal;
 in vec3 v_surfaceToLight[numLights];
 in vec3 v_surfaceToView;
 in float v_lightDist2[numLights];
+in vec4 v_color;
 
 // Scene uniforms
 uniform vec4 u_ambientLight[numLights];
@@ -25,6 +26,7 @@ void main() {
     vec3 normal = normalize(v_normal);
     vec3 surfToViewDirection = normalize(v_surfaceToView);
 
+    vec4 baseColor = v_color * u_diffuseColor;
     vec4 ambientAccum  = vec4(0.0);
     vec4 diffuseAccum  = vec4(0.0);
     vec4 specularAccum = vec4(0.0);
@@ -52,14 +54,18 @@ void main() {
         float diffuse  = max(dot(normal, surfToLightDirection), 0.0);
         float specular = pow(max(dot(r, surfToViewDirection), 0.0), u_shininess);
 
+        float attenuation = 1.0 - dist2 / maxRadius2; // Get a value between 0-1 depending on how close or far to radius
+        attenuation = clamp(attenuation, 0.0, 1.0); // If value of attenuation is not between 0-1, change it
+
         if (i > 0) {
-            float attenuation = 1.0 - dist2 / maxRadius2; // Get a value between 0-1 depending on how close or far to radius
-            attenuation = clamp(attenuation, 0.0, 1.0); // If value of attenuation is not between 0-1, change it
+           ambientAccum  += u_ambientLight[i]  * baseColor * attenuation;
+            diffuseAccum  += u_diffuseLight[i]  * baseColor * diffuse * attenuation;
+            specularAccum += u_specularLight[i] * baseColor * specular * attenuation; 
         }
 
-        ambientAccum  += u_ambientLight[i]  * u_ambientColor;
-        diffuseAccum  += u_diffuseLight[i]  * u_diffuseColor  * diffuse;
-        specularAccum += u_specularLight[i] * u_specularColor * specular;
+        ambientAccum  += u_ambientLight[i]  * baseColor ;
+        diffuseAccum  += u_diffuseLight[i]  * baseColor * diffuse;
+        specularAccum += u_specularLight[i] * baseColor * specular;
     }
 
     outColor = ambientAccum + diffuseAccum + specularAccum;
