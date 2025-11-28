@@ -100,9 +100,9 @@ agentObjects.push(objTextAgent1);
 
 // Pasto
 const objTextRoad = loadText("../assets/obj/3d/roads/grass.obj");
-import roadMltText from "../assets/obj/3d/grass.mtl?raw";
-const objTextRoad2 = loadText("../assets/obj/3d/roads/grass2.obj");
-import road2MltText from "../assets/obj/3d/roads/grass2.mtl?raw";
+import roadMltText from "../assets/obj/3d/roads/grass.mtl?raw";
+const objTextRoad2 = loadText("../assets/obj/3d/roads/grass.obj");
+import road2MltText from "../assets/obj/3d/roads/grass.mtl?raw";
 // Road
 
 
