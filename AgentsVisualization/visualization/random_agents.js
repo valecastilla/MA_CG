@@ -69,7 +69,7 @@ import obstacle3MltText from "../assets/obj/3d/arboles/arbol3.mtl?raw";
 obstacleObjects.push(objTextObstacle3);
 
 const objTextObstacle4 = loadText("../assets/obj/3d/arboles/arbol4.obj");
-import obstacle4MltText from '../assets/obj/3d/arboles/arbol4.mtl?raw';
+import obstacle4MltText from "../assets/obj/3d/arboles/arbol4.mtl?raw";
 obstacleObjects.push(objTextObstacle4);
 
 const objTextObstacle5 = loadText("../assets/obj/3d/arboles/arbol5.obj");
@@ -77,7 +77,7 @@ import obstacle5MltText from "../assets/obj/3d/arboles/arbol5.mtl?raw";
 obstacleObjects.push(objTextObstacle5);
 
 const objTextObstacle6 = loadText("../assets/obj/3d/arboles/arbol6.obj");
-import obstacle6MltText from '../assets/obj/3d/arboles/arbol6.mtl?raw';
+import obstacle6MltText from "../assets/obj/3d/arboles/arbol6.mtl?raw";
 obstacleObjects.push(objTextObstacle6);
 
 const objTextObstacle7 = loadText("../assets/obj/3d/arboles/arbol7.obj");
@@ -109,8 +109,8 @@ const objTextRoad2 = loadText("../assets/obj/3d/roads/grass.obj");
 import road2MltText from "../assets/obj/3d/roads/grass.mtl?raw";
 // Road
 
-
 const baseCube = new Object3D(-1);
+const littleA = new Object3D(-50);
 
 const scene = new Scene3D();
 
@@ -182,7 +182,7 @@ function setupScene() {
   scene.setCamera(camera);
   scene.camera.setupControls();
 
-    let light = new Light3D(
+  let light = new Light3D(
     0,
     [3, 3, 5], // Position
     [0.3, 0.3, 0.3, 1.0], // Ambient
@@ -230,6 +230,7 @@ function setupObjects(scene, gl, programInfo) {
   // Create VAOs for the different shapes
   //baseCube = new Object3D(-1);
   baseCube.prepareVAO(gl, programInfo, objTextAgent1);
+
   // Use objloader function with
 
   // Array to save the obstacle objects
@@ -287,7 +288,6 @@ function setupObjects(scene, gl, programInfo) {
   loadMtl(road2MltText);
   const roadObj = new Object3D(-5);
   roadObj.prepareVAO(gl, programInfo, objTextRoad2);
-  
 
   /*
   // A scaled cube to use as the ground
@@ -332,31 +332,23 @@ function setupObjects(scene, gl, programInfo) {
     if (index == 0) {
       agent.scale = { x: 0.03, y: 0.08, z: 0.05 };
       agent.translation = { x: 0.0, y: -0.5, z: 0.0 };
-    } 
-    else if (index == 1) {
+    } else if (index == 1) {
       agent.scale = { x: 0.3, y: 0.3, z: 0.3 };
-     } 
-    else if (index == 2) {
+    } else if (index == 2) {
       agent.scale = { x: 0.18, y: 0.2, z: 0.18 };
       agent.translation = { x: 0.0, y: -0.5, z: 0.0 };
-    } 
-    else if (index == 3) {
+    } else if (index == 3) {
       agent.scale = { x: 0.1, y: 0.13, z: 0.15 };
-    } 
-    else if (index == 4) {
+    } else if (index == 4) {
       agent.scale = { x: 0.3, y: 0.3, z: 0.3 };
-    }
-    else if (index == 5) {
+    } else if (index == 5) {
       agent.scale = { x: 0.09, y: 0.12, z: 0.09 };
       agent.translation = { x: 0.0, y: -0.5, z: 0.0 };
-    }
-    else if (index == 6) {
+    } else if (index == 6) {
       agent.scale = { x: 0.4, y: 0.45, z: 0.4 };
-    }
-    else if (index == 7) {
+    } else if (index == 7) {
       agent.scale = { x: 0.3, y: 0.35, z: 0.3 };
-    }
-    else if (index == 8) {
+    } else if (index == 8) {
       agent.scale = { x: 0.4, y: 0.4, z: 0.4 };
     }
     scene.addObject(agent);
@@ -389,16 +381,16 @@ function setupObjects(scene, gl, programInfo) {
   }
 
   for (const agent of roads) {
-  //   const roadObj = new Object3D(-5, [14, 0, 14]);
-  //   roadObj.prepareVAO(gl, programInfo);
+    //   const roadObj = new Object3D(-5, [14, 0, 14]);
+    //   roadObj.prepareVAO(gl, programInfo);
 
-  //   agent.arrays = roadObj.arrays;
-  //   agent.bufferInfo = roadObj.bufferInfo;
-  //   agent.vao = roadObj.vao;
-  //   agent.scale = { x: 50, y: 0.1, z: 50 };
-  //   agent.color = [49 / 255, 233 / 255, 150 / 255, 1.0];
-  //   scene.addObject(agent);
-  // }
+    //   agent.arrays = roadObj.arrays;
+    //   agent.bufferInfo = roadObj.bufferInfo;
+    //   agent.vao = roadObj.vao;
+    //   agent.scale = { x: 50, y: 0.1, z: 50 };
+    //   agent.color = [49 / 255, 233 / 255, 150 / 255, 1.0];
+    //   scene.addObject(agent);
+    // }
     agent.arrays = roadObj.arrays;
     agent.bufferInfo = roadObj.bufferInfo;
     agent.vao = roadObj.vao;
@@ -407,7 +399,7 @@ function setupObjects(scene, gl, programInfo) {
     agent.scale = { x: 1, y: 0.01, z: 1 };
     agent.color = roadObj.color;
     scene.addObject(agent);
-}
+  }
 }
 
 // Draw an object with its corresponding transformations
@@ -416,10 +408,7 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   let v3_tra = object.posArray;
   let v3_sca = object.scaArray;
 
-  if (
-    object.oldPosArray &&
-    object.posArray
-  ) {
+  if (object.oldPosArray && object.posArray) {
     const a = object.oldPosArray; // old position
     const b = object.posArray; // new position
 
@@ -440,6 +429,7 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
       v3_tra[2] + object.translation.z,
     ];
   }
+  
 
   /* // Animate the rotation of the objects
   object.rotDeg.x = (object.rotDeg.x + settings.rotationSpeed.x * fract) % 360;
@@ -482,7 +472,7 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
     u_diffuseColor: object.color,
     u_specularColor: object.color,
     u_shininess: object.shininess,
-    // Texture and color override flags
+    // Texture and color depending on object properties
     u_useDiffuseMap: object.texture ? true : false,
     u_forceDiffuseColor: object.forceColor ? true : false,
     u_diffuseMap: object.texture,
@@ -517,27 +507,70 @@ async function drawScene() {
   // Draw the objects
   gl.useProgram(phongProgramInfo.program);
 
-  for (const agent of agents) {
+  for (let i = 0; i < agents.length; i++) {
+    const agent = agents[i];
+    // If the agent id already exists, skip
+    const existingAgent = scene.objects.find((o) => o.id === agent.id);
+    if (existingAgent) continue;
+
     agent.arrays = baseCube.arrays;
     agent.bufferInfo = baseCube.bufferInfo;
     agent.vao = baseCube.vao;
     agent.scale = { x: 0.25, y: 0.35, z: 0.25 };
+    agent.translation = { x: 0.0, y: 0.1, z: 0.0 };
+    agent.forceColor = true;
+    agent.color = [Math.random(), Math.random(), Math.random(), 1.0]; // Random colorw
+
+    // Create a unique little sub-object for this agent
+    const littleA = new Object3D(-2000 - i);
+    littleA.arrays = agent.arrays;
+    littleA.bufferInfo = agent.bufferInfo;
+    littleA.vao = agent.vao;
+    littleA.scale = { x: 0.1, y: 0.15, z: 0.1 };
+    littleA.translation = { x: 0.0, y: 0.1, z: 0.5 }; // Inside the same cell
+    littleA.forceColor = true;
+    littleA.color = [Math.random(), Math.random(), Math.random(), 1.0]; // Random color
+
+    // Attach to the main agent
+    agent.subObject = littleA;
+
+    // Rotating little egg parameters
+    littleA.rotatingRadius = 0.5;
+    littleA.rotatingAngle = Math.random() * Math.PI * 2; // Random start angle
+
     scene.addObject(agent);
+    scene.addObject(littleA);
   }
 
-  // Update traffic light objects' colors and corresponding scene lights
-  // before drawing so the visual objects reflect the current state.
+  for (const agent of agents) {
+    const sub = agent.subObject;
+    if (!sub) continue;
+
+    // Copy old position for interpolation 
+    if (agent.oldPosArray) {
+      sub.oldPosArray = [...agent.oldPosArray];
+    } else {
+      sub.oldPosArray = undefined;
+    }
+
+    // Put the little agent in the same cell as its parent
+    if (agent.posArray) {
+      sub.setPosition(agent.posArray);
+    } 
+  }
+
+  // Update traffic light objects colors
   for (const tl of trafficLights) {
     const baseColor = tl.state ? [0.0, 1.0, 0.0, 1.0] : [1.0, 0.0, 0.0, 1.0];
 
-    // Update any scene light linked to this traffic light
+    // Update light linked to this traffic light
     const light = scene.lights.find((l) => l.trafficId === tl.id);
     if (light) {
       light.ambient = [0.2, 0.2, 0.2, 1.0];
       light.diffuse = baseColor;
     }
 
-    // Update the drawable object (if present) so its `object.color` changes
+    // Update the object color
     const obj = scene.objects.find(
       (o) => o.id === tl.id || o.trafficId === tl.id
     );
@@ -549,8 +582,6 @@ async function drawScene() {
   for (let object of scene.objects) {
     drawObject(gl, phongProgramInfo, object, viewProjectionMatrix, fract);
   }
-
-  
 
   const numLights = 25;
   const lightPositions = [];
@@ -652,6 +683,5 @@ function setupUI() {
       .decimals(2)
   */
 }
-
 
 main();
