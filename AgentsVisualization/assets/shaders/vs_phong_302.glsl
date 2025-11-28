@@ -2,6 +2,7 @@
 in vec4 a_position; // input | atributos unicos a cada vertice
 in vec3 a_normal;
 in vec4 a_color;
+in vec2 a_texcoord;
 
 // Scene uniforms
 const int numLights = 25;
@@ -20,6 +21,7 @@ out vec3 v_surfaceToView;
 // Distancia luz a objeto
 out float v_lightDist2[numLights];
 out vec4 v_color;
+out vec2 v_texcoord;
 
 
 void main() {
@@ -47,5 +49,7 @@ void main() {
     // Direction from the surface to the view
     v_surfaceToView = u_viewWorldPosition - surfaceWoldPosition;
 
+    // Pass color and texcoord through to the fragment shader
     v_color = a_color;
+    v_texcoord = a_texcoord;
 }

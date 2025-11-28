@@ -182,13 +182,13 @@ function setupScene() {
   scene.setCamera(camera);
   scene.camera.setupControls();
 
-  let light = new Light3D(
+    let light = new Light3D(
     0,
-    [3, 4, 5],              // put the sun higher over the scene
-    [1.0, 1.0, 1.0, 1.0],   // strong ambient light
-    [6, 6, 6, 1.0],   // very bright diffuse
-    [1.0, 1.0, 1.0, 1.0]    // specular stays the same
-  );
+    [3, 3, 5], // Position
+    [0.3, 0.3, 0.3, 1.0], // Ambient
+    [1.0, 1.0, 1.0, 1.0], // Diffuse
+    [1.0, 1.0, 1.0, 1.0]
+  ); // Specular
 
   scene.addLight(light);
 
@@ -371,6 +371,9 @@ function setupObjects(scene, gl, programInfo) {
     agent.color = agent.state
       ? [0.0, 1.0, 0.0, 1.0] // green
       : [1.0, 0.0, 0.0, 1.0]; // red
+    // Force using the object's uniform color rather than any vertex colors
+    // or textures that the model might contain.
+    agent.forceColor = true;
     scene.addObject(agent);
   }
 
@@ -378,8 +381,9 @@ function setupObjects(scene, gl, programInfo) {
     agent.arrays = destinationObj.arrays;
     agent.bufferInfo = destinationObj.bufferInfo;
     agent.vao = destinationObj.vao;
-    agent.translation = { x: 0.0, y: 0.1, z: 0.0 };
-    //agent.color = destinationObj.color;
+    agent.translation = { x: 0.0, y: 0.2, z: 0.0 };
+    // Paint basket pink
+    agent.color = [1.0, 0.75, 0.8, 1.0];
     agent.scale = { x: 0.0075, y: 0.0075, z: 0.0075 };
     scene.addObject(agent);
   }
@@ -478,6 +482,10 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
     u_diffuseColor: object.color,
     u_specularColor: object.color,
     u_shininess: object.shininess,
+    // Texture and color override flags
+    u_useDiffuseMap: object.texture ? true : false,
+    u_forceDiffuseColor: object.forceColor ? true : false,
+    u_diffuseMap: object.texture,
   };
   twgl.setUniforms(programInfo, objectUniforms);
 
@@ -517,23 +525,32 @@ async function drawScene() {
     scene.addObject(agent);
   }
 
+  // Update traffic light objects' colors and corresponding scene lights
+  // before drawing so the visual objects reflect the current state.
+  for (const tl of trafficLights) {
+    const baseColor = tl.state ? [0.0, 1.0, 0.0, 1.0] : [1.0, 0.0, 0.0, 1.0];
+
+    // Update any scene light linked to this traffic light
+    const light = scene.lights.find((l) => l.trafficId === tl.id);
+    if (light) {
+      light.ambient = [0.2, 0.2, 0.2, 1.0];
+      light.diffuse = baseColor;
+    }
+
+    // Update the drawable object (if present) so its `object.color` changes
+    const obj = scene.objects.find(
+      (o) => o.id === tl.id || o.trafficId === tl.id
+    );
+    if (obj) {
+      obj.color = baseColor;
+    }
+  }
+
   for (let object of scene.objects) {
     drawObject(gl, phongProgramInfo, object, viewProjectionMatrix, fract);
   }
 
-  for (const tl of trafficLights) {
-    const light = scene.lights.find((l) => l.trafficId === tl.id);
-    if (!light) continue;
-
-    const baseColor = tl.state
-      ? [0.0, 1.0, 0.0, 1.0] // green
-      : [1.0, 0.0, 0.0, 1.0]; // red
-
-    light.ambient = [0.2, 0.2, 0.2, 1.0];
-
-    light.diffuse = baseColor;
-    // specular stay white
-  }
+  
 
   const numLights = 25;
   const lightPositions = [];
