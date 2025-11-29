@@ -28,6 +28,7 @@ import {
   trafficLights,
   destinations,
   roads,
+  grounds,
   initAgentsModel,
   update,
   getAgents,
@@ -35,6 +36,7 @@ import {
   getTrafficLights,
   getDestinations,
   getRoads,
+  getGrounds,
 } from "../libs/api_connection.js";
 
 import vsGLSL from "../assets/shaders/vs_phong_302.glsl?raw";
@@ -43,71 +45,103 @@ import fsGLSL from "../assets/shaders/fs_phong_302.glsl?raw";
 //import vsGLSL from "../assets/shaders/vs_multi_lights_attenuation.glsl?raw";
 //import fsGLSL from "../assets/shaders/fs_multi_lights_attenuation.glsl?raw";
 
-// Chatgpt function to convert file into string
-function loadText(path) {
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", path, false); // false = synchronous
-  xhr.send(null);
-  return xhr.status >= 200 && xhr.status < 300 ? xhr.responseText : "";
-}
 
-const objTextDestination = loadText("../assets/obj/3d/canasta/canasta1.obj");
+// Destination
+import objTextDestination from "../assets/obj/3d/canasta/canasta1.obj?raw";
 import destinationMltText from "../assets/obj/3d/canasta/canasta.mtl?raw";
 
 // Create vec to store obstacles objects to then chose them randomly
 let obstacleObjects = [];
-const objTextObstacle1 = loadText("../assets/obj/3d/arbol1.obj");
+let obstacleMtlObjects = [];
+import objTextObstacle1 from "../assets/obj/3d/arbol1.obj?raw";
 import obstacle1MltText from "../assets/obj/3d/arbol1.mtl?raw";
 obstacleObjects.push(objTextObstacle1);
-
-const objTextObstacle2 = loadText("../assets/obj/3d/arboles/arbol2.obj");
+obstacleMtlObjects.push(obstacle1MltText);
+import objTextObstacle2 from "../assets/obj/3d/arboles/arbol2.obj?raw";
 import obstacle2MltText from "../assets/obj/3d/arboles/arbol2.mtl?raw";
 obstacleObjects.push(objTextObstacle2);
-
-const objTextObstacle3 = loadText("../assets/obj/3d/arboles/arbol3.obj");
+obstacleMtlObjects.push(obstacle2MltText);
+import objTextObstacle3 from "../assets/obj/3d/arboles/arbol3.obj?raw";
 import obstacle3MltText from "../assets/obj/3d/arboles/arbol3.mtl?raw";
 obstacleObjects.push(objTextObstacle3);
-
-const objTextObstacle4 = loadText("../assets/obj/3d/arboles/arbol4.obj");
+obstacleMtlObjects.push(obstacle3MltText);
+import objTextObstacle4 from "../assets/obj/3d/arboles/arbol4.obj?raw";
 import obstacle4MltText from "../assets/obj/3d/arboles/arbol4.mtl?raw";
 obstacleObjects.push(objTextObstacle4);
-
-const objTextObstacle5 = loadText("../assets/obj/3d/arboles/arbol5.obj");
+obstacleMtlObjects.push(obstacle4MltText);
+import objTextObstacle5 from "../assets/obj/3d/arboles/arbol5.obj?raw";
 import obstacle5MltText from "../assets/obj/3d/arboles/arbol5.mtl?raw";
 obstacleObjects.push(objTextObstacle5);
-
-const objTextObstacle6 = loadText("../assets/obj/3d/arboles/arbol6.obj");
+obstacleMtlObjects.push(obstacle5MltText);
+import objTextObstacle6 from "../assets/obj/3d/arboles/arbol6.obj?raw";
 import obstacle6MltText from "../assets/obj/3d/arboles/arbol6.mtl?raw";
 obstacleObjects.push(objTextObstacle6);
-
-const objTextObstacle7 = loadText("../assets/obj/3d/arboles/arbol7.obj");
+obstacleMtlObjects.push(obstacle6MltText);
+import objTextObstacle7 from "../assets/obj/3d/arboles/arbol7.obj?raw";
 import obstacle7MltText from "../assets/obj/3d/arboles/arbol7.mtl?raw";
 obstacleObjects.push(objTextObstacle7);
-
-const objTextObstacle8 = loadText("../assets/obj/3d/arboles/arbol8.obj");
+obstacleMtlObjects.push(obstacle7MltText);
+import objTextObstacle8 from "../assets/obj/3d/arboles/arbol8.obj?raw";
 import obstacle8MltText from "../assets/obj/3d/arboles/arbol8.mtl?raw";
 obstacleObjects.push(objTextObstacle8);
-
-const objTextObstacle9 = loadText("../assets/obj/3d/arboles/arbol9.obj");
+obstacleMtlObjects.push(obstacle8MltText);
+import objTextObstacle9 from "../assets/obj/3d/arboles/arbol9.obj?raw";
 import obstacle9MltText from "../assets/obj/3d/arboles/arbol9.mtl?raw";
 obstacleObjects.push(objTextObstacle9);
+obstacleMtlObjects.push(obstacle9MltText);
 
 // Traffic Agents
-const objTextTraffic = loadText("../assets/obj/3d/trafficlight/semaforo.obj");
+import objTextTraffic from "../assets/obj/3d/trafficlight/semaforo.obj?raw";
 //import obstacle8MltText from '../assets/obj/3d/edificios/tronco.mtl?raw';
 
 // Agents
 let agentObjects = [];
-const objTextAgent1 = loadText("../assets/obj/3d/huevos/huevo1.obj");
+import objTextAgent1 from "../assets/obj/3d/huevos/huevo1.obj?raw";
 import agent1MltText from "../assets/obj/3d/edificios/tronco.mtl?raw";
 agentObjects.push(objTextAgent1);
 
 // Pasto
-const objTextRoad = loadText("../assets/obj/3d/roads/grass.obj");
-import roadMltText from "../assets/obj/3d/roads/grass.mtl?raw";
-const objTextRoad2 = loadText("../assets/obj/3d/roads/grass.obj");
-import road2MltText from "../assets/obj/3d/roads/grass.mtl?raw";
+let groundObjects = [];
+let groundMtlObjects = [];
+import objTextGround from "../assets/obj/3d/pastos/grass1.obj?raw";
+import groundMltText from "../assets/obj/3d/pastos/grass1.mtl?raw";
+groundObjects.push(objTextGround);
+groundMtlObjects.push(groundMltText);
+import objTextGround2 from "../assets/obj/3d/pastos/grass2.obj?raw";
+import ground2MltText from "../assets/obj/3d/pastos/grass2.mtl?raw";
+groundObjects.push(objTextGround2);
+groundMtlObjects.push(ground2MltText);
+import objTextGround3 from "../assets/obj/3d/pastos/grass3.obj?raw";
+import ground3MltText from "../assets/obj/3d/pastos/grass3.mtl?raw";
+groundObjects.push(objTextGround3);
+groundMtlObjects.push(ground3MltText);
+import objTextGround4 from "../assets/obj/3d/pastos/grass4.obj?raw";
+import ground4MltText from "../assets/obj/3d/pastos/grass4.mtl?raw";
+groundObjects.push(objTextGround4);
+groundMtlObjects.push(ground4MltText);
+
+
 // Road
+let roadObjects = [];
+let roadMtlObjects = [];
+import objTextRoad1 from "../assets/obj/3d/tierra/tierra1.obj?raw";
+import road1MltText from "../assets/obj/3d/tierra/tierra1.mtl?raw";
+roadObjects.push(objTextRoad1);
+roadMtlObjects.push(road1MltText);
+import objTextRoad2 from "../assets/obj/3d/tierra/tierra2.obj?raw";
+import road2MltText from "../assets/obj/3d/tierra/tierra2.mtl?raw";
+roadObjects.push(objTextRoad2);
+roadMtlObjects.push(road2MltText);
+import objTextRoad3 from "../assets/obj/3d/tierra/tierra3.obj?raw";
+import road3MltText from "../assets/obj/3d/tierra/tierra3.mtl?raw";
+roadObjects.push(objTextRoad3);
+roadObjects.push(objTextRoad3);
+roadMtlObjects.push(road3MltText);
+roadMtlObjects.push(road3MltText);
+import objTextRoad4 from "../assets/obj/3d/tierra/tierra4.obj?raw";
+import road4MltText from "../assets/obj/3d/tierra/tierra4.mtl?raw";
+roadObjects.push(objTextRoad4);
+roadMtlObjects.push(road4MltText);
 
 const baseCube = new Object3D(-1);
 const littleA = new Object3D(-50);
@@ -153,6 +187,7 @@ async function main() {
   await getTrafficLights();
   await getDestinations();
   await getRoads();
+  await getGrounds();
 
   // Initialize the scene
   setupScene();
@@ -231,49 +266,14 @@ function setupObjects(scene, gl, programInfo) {
   //baseCube = new Object3D(-1);
   baseCube.prepareVAO(gl, programInfo, objTextAgent1);
 
-  // Use objloader function with
-
-  // Array to save the obstacle objects
+  // Obstacles
   let obstacleObjects3d = [];
-  loadMtl(obstacle1MltText);
-  const obstacle1 = new Object3D(-2);
-  obstacle1.prepareVAO(gl, programInfo, obstacleObjects[0]);
-  console.log("arbol1 base color:", obstacle1.color);
-  obstacleObjects3d.push(obstacle1);
-  loadMtl(obstacle2MltText);
-  const obstacle2 = new Object3D(-2);
-  obstacle2.prepareVAO(gl, programInfo, obstacleObjects[1]);
-  obstacleObjects3d.push(obstacle2);
-  loadMtl(obstacle3MltText);
-  const obstacle3 = new Object3D(-2);
-  obstacle3.prepareVAO(gl, programInfo, obstacleObjects[2]);
-  obstacleObjects3d.push(obstacle3);
-  loadMtl(obstacle4MltText);
-  const obstacle4 = new Object3D(-2);
-  obstacle4.prepareVAO(gl, programInfo, obstacleObjects[3]);
-  obstacleObjects3d.push(obstacle4);
-  loadMtl(obstacle5MltText);
-  const obstacle5 = new Object3D(-2);
-  obstacle5.prepareVAO(gl, programInfo, obstacleObjects[4]);
-  obstacleObjects3d.push(obstacle5);
-  loadMtl(obstacle6MltText);
-  const obstacle6 = new Object3D(-2);
-  obstacle6.prepareVAO(gl, programInfo, obstacleObjects[5]);
-  obstacleObjects3d.push(obstacle6);
-  loadMtl(obstacle7MltText);
-  const obstacle7 = new Object3D(-2);
-  obstacle7.prepareVAO(gl, programInfo, obstacleObjects[6]);
-  obstacleObjects3d.push(obstacle7);
-  loadMtl(obstacle8MltText);
-  const obstacle8 = new Object3D(-2);
-  obstacle8.prepareVAO(gl, programInfo, obstacleObjects[7]);
-  obstacleObjects3d.push(obstacle8);
-  loadMtl(obstacle9MltText);
-  const obstacle9 = new Object3D(-2);
-  obstacle9.prepareVAO(gl, programInfo, obstacleObjects[8]);
-  obstacleObjects3d.push(obstacle9);
-
-  //loadMtl(destinationMltText);
+  for (let i = 0; i < obstacleObjects.length; i++) {
+    loadMtl(obstacleMtlObjects[i]);
+    const obstacle = new Object3D(-2);
+    obstacle.prepareVAO(gl, programInfo, obstacleObjects[i]);
+    obstacleObjects3d.push(obstacle);
+  }
 
   // Traffic Light
   const trafficLObj = new Object3D(-3, [1, 5, 1]);
@@ -285,20 +285,22 @@ function setupObjects(scene, gl, programInfo) {
   destinationObj.prepareVAO(gl, programInfo, objTextDestination);
 
   // Roads
-  loadMtl(road2MltText);
-  const roadObj = new Object3D(-5);
-  roadObj.prepareVAO(gl, programInfo, objTextRoad2);
+  let roadObjects3d = [];
+  for (let i = 0; i < roadObjects.length; i++) {
+    loadMtl(roadMtlObjects[i]);
+    const roadObj = new Object3D(-5);
+    roadObj.prepareVAO(gl, programInfo, roadObjects[i]);
+    roadObjects3d.push(roadObj);
+  }
 
-  /*
-  // A scaled cube to use as the ground
-  const ground = new Object3D(-3, [14, 0, 14]);
-  ground.arrays = baseCube.arrays;
-  ground.bufferInfo = baseCube.bufferInfo;
-  ground.vao = baseCube.vao;
-  ground.scale = {x: 50, y: 0.1, z: 50};
-  ground.color = [0.6, 0.6, 0.6, 1];
-  scene.addObject(ground);
-  */
+  // Grounds
+  let groundObjects3d = [];
+  for (let i = 0; i < groundObjects.length; i++) {
+    loadMtl(groundMtlObjects[i]);
+    const groundObj = new Object3D(-6);
+    groundObj.prepareVAO(gl, programInfo, groundObjects[i]);
+    groundObjects3d.push(groundObj);
+  }
 
   // Copy the properties of the base objects
   for (const agent of agents) {
@@ -318,17 +320,8 @@ function setupObjects(scene, gl, programInfo) {
     agent.bufferInfo = baseObstacleObject.bufferInfo;
     agent.vao = baseObstacleObject.vao;
 
-    //agent.color = [0.0, 0.0, 1.0, 1.0];
-
     agent.scale = { x: 0.1, y: 0.1, z: 0.1 };
     agent.color = baseObstacleObject.color;
-    // if (index == 5) {
-    //   agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
-    //   // Make tronco colored brown
-    //   agent.color = [0.55, 0.27, 0.07, 1.0];
-    //   //agent.translation = { x: 0, y: 3, z: 0 };
-    // }
-    // // Arbol
     if (index == 0) {
       agent.scale = { x: 0.03, y: 0.08, z: 0.05 };
       agent.translation = { x: 0.0, y: -0.5, z: 0.0 };
@@ -361,10 +354,8 @@ function setupObjects(scene, gl, programInfo) {
     agent.scale = { x: 2.0, y: 2.0, z: 2.0 };
     agent.translation = { x: 0.0, y: 1.5, z: 0.0 };
     agent.color = agent.state
-      ? [0.0, 1.0, 0.0, 1.0] // green
+      ? [122/255, 155/255, 118/255, 1.0] // green
       : [1.0, 0.0, 0.0, 1.0]; // red
-    // Force using the object's uniform color rather than any vertex colors
-    // or textures that the model might contain.
     agent.forceColor = true;
     scene.addObject(agent);
   }
@@ -374,30 +365,35 @@ function setupObjects(scene, gl, programInfo) {
     agent.bufferInfo = destinationObj.bufferInfo;
     agent.vao = destinationObj.vao;
     agent.translation = { x: 0.0, y: 0.2, z: 0.0 };
-    // Paint basket pink
-    agent.color = [1.0, 0.75, 0.8, 1.0];
+    // Paint basket random color
+    agent.color = [Math.random(), Math.random(), Math.random(), 1.0];
+    agent.forceColor = true;
     agent.scale = { x: 0.0075, y: 0.0075, z: 0.0075 };
     scene.addObject(agent);
   }
 
   for (const agent of roads) {
-    //   const roadObj = new Object3D(-5, [14, 0, 14]);
-    //   roadObj.prepareVAO(gl, programInfo);
+    const index = Math.floor(randRange(0, roadObjects3d.length));
+    const roadObj = roadObjects3d[index];
 
-    //   agent.arrays = roadObj.arrays;
-    //   agent.bufferInfo = roadObj.bufferInfo;
-    //   agent.vao = roadObj.vao;
-    //   agent.scale = { x: 50, y: 0.1, z: 50 };
-    //   agent.color = [49 / 255, 233 / 255, 150 / 255, 1.0];
-    //   scene.addObject(agent);
-    // }
     agent.arrays = roadObj.arrays;
     agent.bufferInfo = roadObj.bufferInfo;
     agent.vao = roadObj.vao;
     agent.translation = { x: 0.0, y: -0.4, z: 0.0 };
-    //agent.scale = { x: 0.065, y: 0.01, z: 0.065 };
-    agent.scale = { x: 1, y: 0.01, z: 1 };
+    agent.scale = { x: 0.055, y: 0.01, z: 0.055 };
     agent.color = roadObj.color;
+    scene.addObject(agent);
+  }
+
+  for (const agent of grounds) {
+    const index = Math.floor(randRange(0, groundObjects3d.length));
+    const groundObj = groundObjects3d[index];
+    agent.arrays = groundObj.arrays;
+    agent.bufferInfo = groundObj.bufferInfo;
+    agent.vao = groundObj.vao;
+    agent.translation = { x: 0.0, y: -0.3, z: 0.0 };
+    agent.scale = { x: 0.06, y: 0.01, z: 0.06 };
+    agent.color = groundObj.color;
     scene.addObject(agent);
   }
 }
@@ -561,7 +557,7 @@ async function drawScene() {
 
   // Update traffic light objects colors
   for (const tl of trafficLights) {
-    const baseColor = tl.state ? [0.0, 1.0, 0.0, 1.0] : [1.0, 0.0, 0.0, 1.0];
+    const baseColor = tl.state ? [0.45, 0.9, 0.27, 1.0] : [255/255, 66/255, 63/255, 1.0];
 
     // Update light linked to this traffic light
     const light = scene.lights.find((l) => l.trafficId === tl.id);

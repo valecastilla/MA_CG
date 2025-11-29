@@ -19,6 +19,7 @@ const obstacles = [];
 const trafficLights = [];
 const destinations = [];
 const roads = [];
+const grounds = [];
 
 // Define the data object
 const initData = {
@@ -137,6 +138,31 @@ async function getObstacles() {
     }
 }
 
+async function getGrounds() {
+    try {
+        // Send a GET request to the agent server to retrieve the obstacle positions
+        let response = await fetch(agent_server_uri + "getGrounds");
+
+        // Check if the response was successful
+        if (response.ok) {
+            // Parse the response as JSON
+            let result = await response.json();
+
+            // Create new obstacles and add them to the obstacles array
+            for (const ground of result.positions) {
+                const newGround = new Object3D(ground.id, [ground.x, ground.y, ground.z]);
+                grounds.push(newGround);
+            }
+            // Log the obstacles array
+            // console.log("Grounds:", grounds);
+        }
+
+    } catch (error) {
+        // Log any errors that occur during the request
+        console.log(error);
+    }
+}
+
 async function getTrafficLights() {
     try {
         // Send a GET request to the agent server to retrieve the obstacle positions
@@ -165,6 +191,9 @@ async function getTrafficLights() {
                     );
                     if (current) {
                         current.state = trafficLight.state;
+                        // console.log("Updated traffic light id:", current.id, "state:", current.state);
+                        // show time in console
+                        //console.log("Update time:", new Date().toLocaleTimeString());
                     }
                 }
             }
@@ -255,4 +284,4 @@ async function update() {
     }
 }
 
-export { agents, obstacles, trafficLights, destinations, roads, initAgentsModel, update, getAgents, getObstacles, getTrafficLights, getDestinations, getRoads };
+export { agents, obstacles, grounds, trafficLights, destinations, roads, initAgentsModel, update, getAgents, getObstacles, getGrounds, getTrafficLights, getDestinations, getRoads };

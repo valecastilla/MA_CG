@@ -115,6 +115,42 @@ def getObstacles():
             print(e)
             return jsonify({"message": "Error with obstacle positions"}), 500
         
+        
+# This route will be used to get the positions of the ground
+@app.route('/getGrounds', methods=['GET'])
+@cross_origin()
+def getGrounds():
+    global randomModel
+
+    if request.method == 'GET':
+        try:
+            # Get the positions of the obstacles and return them to WebGL in JSON.json.t.
+            # Same as before, the positions are sent as a list of dictionaries, where each dictionary has the id and position of an obstacle.
+
+            groundCells = randomModel.grid.all_cells.select(
+                lambda cell: any(isinstance(obj, Tierra) for obj in cell.agents)
+            )
+            # print(f"CELLS: {agentCells}")
+
+            agents = [
+                (cell.coordinate, agent)
+                for cell in groundCells
+                for agent in cell.agents
+                if isinstance(agent, Tierra)
+            ]
+            # print(f"AGENTS: {agents}")
+
+            groundPositions = [
+                {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1]}
+                for (coordinate, a) in agents
+            ]
+            # print(f"GROUND POSITIONS: {groundPositions}")
+            return jsonify({'positions': groundPositions})
+        except Exception as e:
+            print(e)
+            return jsonify({"message": "Error with ground positions"}), 500
+        
+        
 # This route will be used to get the positions of the obstacles
 @app.route('/getTrafficLights', methods=['GET'])
 @cross_origin()
@@ -143,7 +179,7 @@ def getTrafficLights():
                 {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1], "state": a.state}
                 for (coordinate, a) in agents
             ]
-            # print(f"OBSTACLE POSITIONS: {obstaclePositions}")
+            print(f"TRAFFIC LIGHT POSITIONS: {trafficLightPositions}")
 
             return jsonify({'positions': trafficLightPositions})
         except Exception as e:
