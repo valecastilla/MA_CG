@@ -146,18 +146,6 @@ const littleA = new Object3D(-50);
 
 const scene = new Scene3D();
 
-/*
-// Variable for the scene settings
-const settings = {
-    // Speed in degrees
-    rotationSpeed: {
-        x: 0,
-        y: 0,
-        z: 0,
-    },
-};
-*/
-
 // Global variables
 let phongProgramInfo = undefined;
 let gl = undefined;
@@ -240,7 +228,7 @@ function setupScene() {
       : [1.0, 0.0, 0.0, 1.0]; // red
 
     const ambient = [0.0, 0.0, 0.0, 1.0];
-    const diffuse = baseColor; // color dependent on state
+    const diffuse = baseColor; // Color dependent on state
     const specular = [1.0, 1.0, 1.0, 1.0];
 
     const pos = [tl.position.x, tl.position.y, tl.position.z];
@@ -556,23 +544,6 @@ async function drawScene() {
     sub.position.z = center[2] + rotationZ;
   }
 
-  // for (const agent of agents) {
-  //   const sub = agent.subObject;
-  //   if (!sub) continue;
-
-  //   // Copy old position for interpolation
-  //   if (agent.oldPosArray) {
-  //     sub.oldPosArray = [...agent.oldPosArray];
-  //   } else {
-  //     sub.oldPosArray = undefined;
-  //   }
-
-  //   // Put the little agent in the same cell as its parent
-  //   if (agent.posArray) {
-  //     sub.setPosition(agent.posArray);
-  //   }
-  // }
-
   // Update traffic light objects colors
   for (const tl of trafficLights) {
     const baseColor = tl.state
@@ -643,8 +614,6 @@ async function drawScene() {
       specularLights.push(0.0, 0.0, 0.0, 1.0);
     }
   }
-
-  const ambientLight = [0.2, 0.2, 0.2, 1.0];
 
   const globalUniforms = {
     u_viewWorldPosition: scene.camera.posArray,

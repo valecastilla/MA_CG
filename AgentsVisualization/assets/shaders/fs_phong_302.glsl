@@ -62,30 +62,27 @@ void main() {
             attenuation = clamp(attenuation, 0.0, 1.0); // If value of attenuation is not between 0-1, change it
         }
 
-        // Accumulate raw light contributions (colors only). Do NOT multiply by
-        // material colors here to avoid applying material twice (causes darkening).
         ambientAccum  += u_ambientLight[i];
         diffuseAccum  += u_diffuseLight[i] * diffuse;
         specularAccum += u_specularLight[i] * specular;
     }
 
-    // Choose material color source. Allow forcing the uniform color first
-    // (useful for dynamic object colors like traffic lights), otherwise use
-    // texture -> vertex color -> uniform.
+
+
+    // Choose material color
     vec4 matColor;
     if (u_forceDiffuseColor) {
         matColor = u_diffuseColor;
     } else if (u_useDiffuseMap) {
         vec4 texc = texture(u_diffuseMap, v_texcoord);
         matColor = texc * u_diffuseColor;
-    } else if (v_color.a > 0.0) {
+    } else if (v_color.a > 0.0) { 
         matColor = v_color;
     } else {
         matColor = u_diffuseColor;
     }
 
-    // Apply chosen material color once to ambient and diffuse. Specular uses
-    // the material's specular color (separate) so lighting behavior stays intact.
+    // Apply chosen material color once to ambient and diffuse
     vec4 finalAmbient  = ambientAccum * matColor;
     vec4 finalDiffuse  = diffuseAccum * matColor;
     vec4 finalSpecular = specularAccum * u_specularColor;
