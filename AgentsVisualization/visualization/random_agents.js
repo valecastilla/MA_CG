@@ -45,7 +45,6 @@ import fsGLSL from "../assets/shaders/fs_phong_302.glsl?raw";
 //import vsGLSL from "../assets/shaders/vs_multi_lights_attenuation.glsl?raw";
 //import fsGLSL from "../assets/shaders/fs_multi_lights_attenuation.glsl?raw";
 
-
 // Destination
 import objTextDestination from "../assets/obj/3d/canasta/canasta1.obj?raw";
 import destinationMltText from "../assets/obj/3d/canasta/canasta.mtl?raw";
@@ -119,7 +118,6 @@ import objTextGround4 from "../assets/obj/3d/pastos/grass4.obj?raw";
 import ground4MltText from "../assets/obj/3d/pastos/grass4.mtl?raw";
 groundObjects.push(objTextGround4);
 groundMtlObjects.push(ground4MltText);
-
 
 // Road
 let roadObjects = [];
@@ -354,7 +352,7 @@ function setupObjects(scene, gl, programInfo) {
     agent.scale = { x: 2.0, y: 2.0, z: 2.0 };
     agent.translation = { x: 0.0, y: 1.5, z: 0.0 };
     agent.color = agent.state
-      ? [122/255, 155/255, 118/255, 1.0] // green
+      ? [122 / 255, 155 / 255, 118 / 255, 1.0] // green
       : [1.0, 0.0, 0.0, 1.0]; // red
     agent.forceColor = true;
     scene.addObject(agent);
@@ -425,7 +423,6 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
       v3_tra[2] + object.translation.z,
     ];
   }
-  
 
   /* // Animate the rotation of the objects
   object.rotDeg.x = (object.rotDeg.x + settings.rotationSpeed.x * fract) % 360;
@@ -523,7 +520,7 @@ async function drawScene() {
     littleA.bufferInfo = agent.bufferInfo;
     littleA.vao = agent.vao;
     littleA.scale = { x: 0.1, y: 0.15, z: 0.1 };
-    littleA.translation = { x: 0.0, y: 0.1, z: 0.5 }; // Inside the same cell
+    littleA.translation = { x: 0.0, y: 0.1, z: 0.0 }; // Inside the same cell
     littleA.forceColor = true;
     littleA.color = [Math.random(), Math.random(), Math.random(), 1.0]; // Random color
 
@@ -531,33 +528,56 @@ async function drawScene() {
     agent.subObject = littleA;
 
     // Rotating little egg parameters
-    littleA.rotatingRadius = 0.5;
+    littleA.rotatingRadius = 0.4;
     littleA.rotatingAngle = Math.random() * Math.PI * 2; // Random start angle
 
     scene.addObject(agent);
     scene.addObject(littleA);
   }
 
+  // Make the little agents orbit around their parent agents using `fract`
   for (const agent of agents) {
     const sub = agent.subObject;
     if (!sub) continue;
 
-    // Copy old position for interpolation 
-    if (agent.oldPosArray) {
-      sub.oldPosArray = [...agent.oldPosArray];
-    } else {
-      sub.oldPosArray = undefined;
-    }
+    const center = agent.posArray; // Center is bigger egg position
+    const radius = sub.rotatingRadius;
+    const baseAngle = sub.rotatingAngle;
 
-    // Put the little agent in the same cell as its parent
-    if (agent.posArray) {
-      sub.setPosition(agent.posArray);
-    } 
+    // One full turn per "duration" (1 second): angle = base + fract * 2π
+    const angle = baseAngle + (fract*2.5) * 2 * Math.PI;
+
+    // Calculate next pos in radius using polar coordinates
+    const rotationX = Math.cos(angle) * radius;
+    const rotationZ = Math.sin(angle) * radius;
+
+    sub.position.x = center[0] + rotationX;
+    sub.position.y = center[1]; // Same current y
+    sub.position.z = center[2] + rotationZ;
   }
+
+  // for (const agent of agents) {
+  //   const sub = agent.subObject;
+  //   if (!sub) continue;
+
+  //   // Copy old position for interpolation
+  //   if (agent.oldPosArray) {
+  //     sub.oldPosArray = [...agent.oldPosArray];
+  //   } else {
+  //     sub.oldPosArray = undefined;
+  //   }
+
+  //   // Put the little agent in the same cell as its parent
+  //   if (agent.posArray) {
+  //     sub.setPosition(agent.posArray);
+  //   }
+  // }
 
   // Update traffic light objects colors
   for (const tl of trafficLights) {
-    const baseColor = tl.state ? [0.45, 0.9, 0.27, 1.0] : [255/255, 66/255, 63/255, 1.0];
+    const baseColor = tl.state
+      ? [0.45, 0.9, 0.27, 1.0]
+      : [255 / 255, 66 / 255, 63 / 255, 1.0];
 
     // Update light linked to this traffic light
     const light = scene.lights.find((l) => l.trafficId === tl.id);

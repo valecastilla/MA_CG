@@ -179,7 +179,7 @@ def getTrafficLights():
                 {"id": str(a.unique_id), "x": coordinate[0], "y":1, "z":coordinate[1], "state": a.state}
                 for (coordinate, a) in agents
             ]
-            print(f"TRAFFIC LIGHT POSITIONS: {trafficLightPositions}")
+            # print(f"TRAFFIC LIGHT POSITIONS: {trafficLightPositions}")
 
             return jsonify({'positions': trafficLightPositions})
         except Exception as e:
