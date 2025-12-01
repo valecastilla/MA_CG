@@ -27,7 +27,8 @@ def agent_portrayal(agent):
             
 #
     if isinstance(agent, Destination):
-        portrayal.color = "lightgreen"
+        portrayal.marker = "o"
+        portrayal.color = "#3907FFFF"
     if isinstance(agent, Intersection):
         portrayal.color = "#EE909057"
 
@@ -36,7 +37,9 @@ def agent_portrayal(agent):
         portrayal.color = "#FA0000FF" if not agent.state else "#90EE90FF"
 
     if isinstance(agent, Obstacle): 
-        portrayal.color = "#555"
+    
+        portrayal.color = "red"
+        portrayal.marker = "o"
 
     return portrayal
 

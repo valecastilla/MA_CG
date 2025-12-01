@@ -9,7 +9,7 @@ class Car(CellAgent):
     Agent that moves randomly.
     """
     grafo_mapa = []
-    def __init__(self, model, cell):
+    def __init__(self, model, cell, ruta):
         """
         Creates a new random agent.
         Args:
@@ -20,74 +20,83 @@ class Car(CellAgent):
         self.cell = cell
         self.estadoMovimiento=""
         self.direccionMovimiento=""
+        self.ruta= ruta
+        print(self.ruta)
+        self.nodoactual = ""
+        self.indexActual =0
+        self.isNodoFinal=False
+        self.nodofinal=GlobalGraph.obtener_nodo_por_id(self.ruta[len(self.ruta) - 1]["nodo_id"])
+        print(self.nodofinal)
+      
+      
+    
+    def seguirRuta(self):
+        intersection = next((a for a in self.cell.agents if isinstance(a, Intersection)), None)
+       
+        if intersection!= None:
+            print(intersection.idNodoInter)
+            for index, nodo in enumerate(self.ruta):
+                
+                if nodo.get("nodo_id") == intersection.idNodoInter:
+                    self.nodoactual, self.indexActual= nodo, index
+            print("direccion:")
+            print("index")
+
+
+            print(self.ruta[self.indexActual + 1]["direccion"])   
+            self.direccionMovimiento=self.ruta[self.indexActual + 1]["direccion"]
+            
+
         
     def moverse(self):
-        # Validar que self.cell no sea None
-        if self.cell is None:
-            print("ERROR: Car.cell es None, no se puede mover")
-            return
-        
-        # Buscar el objeto Road en la celda actual
-        road = next((a for a in self.cell.agents if isinstance(a, Road)), None)
-        
-        if road is None:
-            print(f"WARNING: No se encontró Road en la celda {self.cell.coordinate}")
-            return
-        
-        # Obtener la dirección usando el carácter guardado en char
-        # Los caracteres son: "^" (arriba), "v" (abajo), "<" (izquierda), ">" (derecha)
-        direccion_char = getattr(road, 'char', None)
-        
-        if direccion_char is None:
-            print(f"WARNING: Road sin atributo 'char' en {self.cell.coordinate}")
-            return
-        
-        self.direccionMovimiento = direccion_char
-        
-        # Obtener vecinos de la celda actual
-        x, y = self.cell.coordinate
-        
-        # Mapear el carácter de dirección a coordenadas del vecino destino
-        mapeo_direccion = {
-            "^": (x, y + 1),      # arriba
-            "v": (x, y - 1),      # abajo
-            "<": (x - 1, y),      # izquierda
-            ">": (x + 1, y)       # derecha
+        # Actualizar dirección según la ruta
+        self.seguirRuta()
+
+        if not self.direccionMovimiento:
+            return  # no hay más nodos
+
+        # Mapa de tus direcciones → desplazamientos reales
+        mapeo = {
+            "Arriba": (0, 1),
+            "Abajo": (0, -1),
+            "Izquierda": (-1, 0),
+            "Derecha": (1, 0),
+
+            # diagonales si las usas
+            "ArribaIzquierda": (-1, 1),
+            "ArribaDerecha": (1, 1),
+            "AbajoIzquierda": (-1, -1),
+            "AbajoDerecha": (1, -1)
         }
-        
-        # Obtener coordenada destino
-        coord_destino = mapeo_direccion.get(direccion_char)
-        
-        if coord_destino is None:
-            print(f"WARNING: Dirección '{direccion_char}' no reconocida en {self.cell.coordinate}")
+
+        dxdy = mapeo.get(self.direccionMovimiento)
+
+        if dxdy is None:
+            print("Dirección no reconocida:", self.direccionMovimiento)
             return
-        
-        # Buscar la celda destino en el grid
-        destino = None
+
+        x, y = self.cell.coordinate
+        dx, dy = dxdy
+        coord_destino = (x + dx, y + dy)
+
+        # Buscar la celda destino
         try:
             destino = self.model.grid[coord_destino]
-        except (KeyError, IndexError):
-            print(f"WARNING: Coordenada destino {coord_destino} fuera del grid")
+        except Exception:
+            print("Destino fuera del grid:", coord_destino)
             return
-        
-        if destino is None:
-            print(f"WARNING: No existe celda en coordenada {coord_destino}")
+
+        # Obstáculos
+        if any(isinstance(a, Obstacle) for a in destino.agents):
             return
-        
-        # Verificar si hay un obstáculo en el destino
-        tiene_obstaculo = any(isinstance(a, Obstacle) for a in destino.agents)
-        if tiene_obstaculo:
-            # print(f"INFO: Obstáculo en {destino.coordinate}, esperando")
+
+        # Otro carro
+        if any(isinstance(a, Car) for a in destino.agents):
             return
-        
-        # Verificar si hay otro carro en el destino
-        tiene_carro = any(isinstance(a, Car) for a in destino.agents)
-        if tiene_carro:
-            # print(f"INFO: Carro en {destino.coordinate}, esperando")
-            return
-        
-        # Si todo está bien, moverse
+
+        # Todo OK → mover
         self.move_to(destino)
+
             
     def move(self):
         self.moverse()

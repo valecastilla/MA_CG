@@ -41,6 +41,10 @@ class Destination(FixedAgent):
         super().__init__(model)
         self.cell = cell
         self.esNodo= False
+        self.idNodoInter= ""
+    def idNodo(self,id):
+       self.idNodoInter = id
+    
 
 class Obstacle(FixedAgent):
     """
@@ -87,6 +91,10 @@ class Intersection(FixedAgent):
         """
         super().__init__(model)
         self.cell = cell
+        self.idNodoInter= ""
+    def idNodo(self,id):
+       self.idNodoInter = id
+    
 
 class Road(FixedAgent):
     """
