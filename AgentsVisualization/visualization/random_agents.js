@@ -141,6 +141,9 @@ import road4MltText from "../assets/obj/3d/tierra/tierra4.mtl?raw";
 roadObjects.push(objTextRoad4);
 roadMtlObjects.push(road4MltText);
 
+// Sky box
+import objTextSkybox from "../assets/models/skybox.obj?raw";
+
 const baseCube = new Object3D(-1);
 const littleA = new Object3D(-50);
 
@@ -251,6 +254,14 @@ function setupObjects(scene, gl, programInfo) {
   // Create VAOs for the different shapes
   //baseCube = new Object3D(-1);
   baseCube.prepareVAO(gl, programInfo, objTextAgent1);
+
+  // Skybox
+  const skybox = new Object3D(-7);
+  skybox.prepareVAO(gl, programInfo, objTextSkybox);
+  skybox.translation = { x: 11.0, y: 0.0, z: 11.0 };
+  skybox.scale = { x: 1.25, y: 2.0, z: 1.25 };
+  skybox.color = [119/255, 150/255, 203/255, 1.0];
+  scene.addObject(skybox);
 
   // Obstacles
   let obstacleObjects3d = [];
