@@ -5,7 +5,7 @@ class Traffic_Light(FixedAgent):
     """
     Traffic light. Where the traffic lights are in the grid.
     """
-    def __init__(self, model, cell, state = False, timeToChange = 10):
+    def __init__(self, model, cell, state = False, timeToChange = 20):
         """
         Creates a new Traffic light.
         Args:
@@ -15,7 +15,7 @@ class Traffic_Light(FixedAgent):
             timeToChange: After how many step should the traffic light change color 
         """
         super().__init__(model)
-        print("se creo semaforo")
+       
         self.cell = cell
         self.state = state
         self.timeToChange = timeToChange
@@ -41,6 +41,10 @@ class Destination(FixedAgent):
         super().__init__(model)
         self.cell = cell
         self.esNodo= False
+        self.idNodoInter= ""
+    def idNodo(self,id):
+       self.idNodoInter = id
+    
 
 class Obstacle(FixedAgent):
     """
@@ -87,6 +91,10 @@ class Intersection(FixedAgent):
         """
         super().__init__(model)
         self.cell = cell
+        self.idNodoInter= ""
+    def idNodo(self,id):
+       self.idNodoInter = id
+    
 
 class Road(FixedAgent):
     """
