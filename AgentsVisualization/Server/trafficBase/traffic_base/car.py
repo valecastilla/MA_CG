@@ -134,17 +134,57 @@ class Car(CellAgent):
             if izquierda is None:
                 return False
             return any(isinstance(a, (Car, Obstacle)) for a in izquierda.agents)
+     def puedeRebasar(direccion,):
+        road = next((a for a in self.cell.agents if isinstance(a, Road)), None)
+        direccion_actual= road.direction
+       
+        if direccion == "Arriba":
+            if not any(isinstance(a, (Car, Obstacle)) for a in arribaDerecha.agents) and not any(isinstance(a, (Car, Obstacle)) for a in derecha.agents):
+                r= next((a for a in self.arribaDerecha.agents if isinstance(a, Road)), None)
+                if r.direction== direccion_actual:
+                    return"ArribaDerecha"
+            if not any(isinstance(a, (Car, Obstacle)) for a in arribaIzquierda.agents) and not any(isinstance(a, (Car, Obstacle)) for a in izquierda.agents):
+                
+                return"ArribaIzquierda"
+            
+            return "NO"
+
+        elif direccion == "Abajo":
+            if not any(isinstance(a, (Car, Obstacle)) for a in abajoDerecha.agents) and not any(isinstance(a, (Car, Obstacle)) for a in derecha.agents):
+                return"AbajoDerecha"
+            if not any(isinstance(a, (Car, Obstacle)) for a in abajoIzquierda.agents) and not any(isinstance(a, (Car, Obstacle)) for a in izquierda.agents):
+
+                return"ArribaIzquierda"
+            
+            return "NO"
+
+        elif direccion == "Derecha":
+            if not any(isinstance(a, (Car, Obstacle)) for a in abajoDerecha.agents) and not any(isinstance(a, (Car, Obstacle)) for a in abajo.agents):
+                return"AbajoDerecha"
+            if not any(isinstance(a, (Car, Obstacle)) for a in arribaDerecha.agents) and not any(isinstance(a, (Car, Obstacle)) for a in arriba.agents):
+                return"ArribaDerecha"
+            
+            return "NO"
+
+        elif direccion == "Izquierda":
+            if not any(isinstance(a, (Car, Obstacle)) for a in abajoIzquierda.agents) and not any(isinstance(a, (Car, Obstacle)) for a in abajo.agents):
+
+                return"AbajoDerecha"
+            if not any(isinstance(a, (Car, Obstacle)) for a in arribaIzquierda.agents) and not any(isinstance(a, (Car, Obstacle)) for a in arriba.agents):
+                return"ArribaDerecha"
+            
+            return "NO"
 
          
      
      def llego():
-         print(f"🎯 Carro llegó a destino en posición ({xf}, {yf})")
+         print(f"Carro llegó a destino en posición ({xf}, {yf})")
          self.debe_eliminarse = True  
          
      # CAMBIO IMPORTANTE: Estas funciones ya no retornan True/False
      def estado_ARRIBA():
          if encontroObstaculo("Arriba"):
-             print("encontroObstaculo")
+             
              
          tiene_semaforo_rojo(arriba)
          
