@@ -56,9 +56,42 @@ import skyPy from "../assets/obj/3d/skybox/py.png";
 import skyNy from "../assets/obj/3d/skybox/ny.png";
 import skyPz from "../assets/obj/3d/skybox/pz.png";
 import skyNz from "../assets/obj/3d/skybox/nz.png";
+import layoutSB from "../assets/obj/3d/skybox/layout.png";
+
+// Agents
+let agentObjects = [];
+let agentMtlObjects = [];
+import objTextAgent1 from "../assets/obj/3d/huevos/huevo1.obj?raw";
+import agent1MltText from "../assets/obj/3d/huevos/huevo1.mtl?raw";
+agentObjects.push(objTextAgent1);
+agentMtlObjects.push(agent1MltText);
+  import objTextAgent2 from "../assets/obj/3d/huevos/huevo2.obj?raw";
+  import agent2MltText from "../assets/obj/3d/huevos/huevo2.mtl?raw";
+agentObjects.push(objTextAgent2);
+agentMtlObjects.push(agent2MltText);
+  import objTextAgent3 from "../assets/obj/3d/huevos/huevo3.obj?raw";
+  import agent3MltText from "../assets/obj/3d/huevos/huevo3.mtl?raw";
+agentObjects.push(objTextAgent3);
+agentMtlObjects.push(agent3MltText);
+  import objTextAgent4 from "../assets/obj/3d/huevos/huevo4.obj?raw";
+  import agent4MltText from "../assets/obj/3d/huevos/huevo4.mtl?raw";
+agentObjects.push(objTextAgent4);
+agentMtlObjects.push(agent4MltText);
+  import objTextAgent5 from "../assets/obj/3d/huevos/huevo5.obj?raw";
+  import agent5MltText from "../assets/obj/3d/huevos/huevo5.mtl?raw";
+agentObjects.push(objTextAgent5);
+agentMtlObjects.push(agent5MltText);
+  import objTextAgent6 from "../assets/obj/3d/huevos/huevo6.obj?raw";
+  import agent6MltText from "../assets/obj/3d/huevos/huevo6.mtl?raw";
+agentObjects.push(objTextAgent6);
+agentMtlObjects.push(agent6MltText);
+  import objTextAgent7 from "../assets/obj/3d/huevos/huevo7.obj?raw";
+  import agent7MltText from "../assets/obj/3d/huevos/huevo7.mtl?raw";
+agentObjects.push(objTextAgent7);
+agentMtlObjects.push(agent7MltText);
 
 // Destination
-import objTextDestination from "../assets/obj/3d/canasta/canasta1.obj?raw";
+import objTextDestination from "../assets/obj/3d/canasta/canasta.obj?raw";
 import destinationMltText from "../assets/obj/3d/canasta/canasta.mtl?raw";
 
 // Create vec to store obstacles objects to then chose them randomly
@@ -103,13 +136,6 @@ obstacleMtlObjects.push(obstacle9MltText);
 
 // Traffic Agents
 import objTextTraffic from "../assets/obj/3d/trafficlight/semaforo.obj?raw";
-//import obstacle8MltText from '../assets/obj/3d/edificios/tronco.mtl?raw';
-
-// Agents
-let agentObjects = [];
-import objTextAgent1 from "../assets/obj/3d/huevos/huevo1.obj?raw";
-import agent1MltText from "../assets/obj/3d/edificios/tronco.mtl?raw";
-agentObjects.push(objTextAgent1);
 
 // Pasto
 let groundObjects = [];
@@ -156,8 +182,11 @@ roadMtlObjects.push(road4MltText);
 // Sky box
 import objTextSkybox from "../assets/models/skybox.obj?raw";
 
-const baseCube = new Object3D(-1);
-const littleA = new Object3D(-50);
+// Agents 3D objects
+let agentObjects3d = [];
+
+let legBase = null;
+
 
 const scene = new Scene3D();
 
@@ -269,7 +298,19 @@ function randRange(min, max) {
 function setupObjects(scene, gl, programInfo) {
   // Create VAOs for the different shapes
   //baseCube = new Object3D(-1);
-  baseCube.prepareVAO(gl, programInfo, objTextAgent1);
+  const cube = new Object3D(-8);
+  cube.prepareVAO(gl, programInfo);
+
+  // Agents
+  for (let i = 0; i < agentObjects.length; i++) {
+    loadMtl(agentMtlObjects[i]);
+    const agentObj = new Object3D(-1);
+    agentObj.prepareVAO(gl, programInfo, agentObjects[i]);
+    agentObjects3d.push(agentObj);
+  }
+
+  // Leg Base
+  
 
   // Obstacles
   let obstacleObjects3d = [];
@@ -285,7 +326,7 @@ function setupObjects(scene, gl, programInfo) {
   trafficLObj.prepareVAO(gl, programInfo, objTextTraffic);
 
   // Destination
-  //loadMtl(destinationMltText);
+  loadMtl(destinationMltText);
   const destinationObj = new Object3D(-4);
   destinationObj.prepareVAO(gl, programInfo, objTextDestination);
 
@@ -371,8 +412,7 @@ function setupObjects(scene, gl, programInfo) {
     agent.vao = destinationObj.vao;
     agent.translation = { x: 0.0, y: 0.2, z: 0.0 };
     // Paint basket random color
-    agent.color = [Math.random(), Math.random(), Math.random(), 1.0];
-    agent.forceColor = true;
+    agent.color = destinationObj.color;
     agent.scale = { x: 0.0075, y: 0.0075, z: 0.0075 };
     scene.addObject(agent);
   }
@@ -380,6 +420,20 @@ function setupObjects(scene, gl, programInfo) {
   for (const agent of roads) {
     const index = Math.floor(randRange(0, roadObjects3d.length));
     const roadObj = roadObjects3d[index];
+
+    // if (agent.posArray && Math.round(agent.posArray[0]) === 14 && Math.round(agent.posArray[2]) === 14) {
+    //   agent.arrays = cube.arrays;
+    //   agent.bufferInfo = cube.bufferInfo;
+    //   agent.vao = cube.vao;
+    //   // Keep it at ground level; adjust translation/scale as required
+    //   agent.translation = { x: 0.0, y: -1.0, z: 0.0 };
+    //   agent.scale = { x: 50.0, y: 1.0, z: 50.0 };
+    //   // paint it brown to simulate dirt
+    //   agent.color = [0.214026, 0.111304, 0.050052, 1.0];
+    //   agent.forceColor = true;
+    //   scene.addObject(agent);
+    //   continue;
+    // }
 
     agent.arrays = roadObj.arrays;
     agent.bufferInfo = roadObj.bufferInfo;
@@ -409,11 +463,11 @@ function setupSkybox(scene, gl, programInfo) {
 
   // Position and scale
   skybox.translation = { x: 11.0, y: 0.0, z: 11.0 };
-  skybox.scale = { x: 2.0, y: 2.0, z: 2.0 };
+  skybox.scale = { x: 5.0, y: 5.0, z: 5.0 };
 
   // Create a 2D texture
   skybox.texture = twgl.createTexture(gl, {
-    src: skyPx,            
+    src: layoutSB,            
     min: gl.LINEAR_MIPMAP_LINEAR,
     mag: gl.LINEAR,
     wrap: gl.CLAMP_TO_EDGE,
@@ -599,23 +653,24 @@ async function drawScene() {
     const existingAgent = scene.objects.find((o) => o.id === agent.id);
     if (existingAgent) continue;
 
-    agent.arrays = baseCube.arrays;
-    agent.bufferInfo = baseCube.bufferInfo;
-    agent.vao = baseCube.vao;
-    agent.scale = { x: 0.25, y: 0.35, z: 0.25 };
-    agent.translation = { x: 0.0, y: 0.1, z: 0.0 };
-    agent.forceColor = true;
-    agent.color = [Math.random(), Math.random(), Math.random(), 1.0]; // Random colorw
+    const index = Math.floor(randRange(0, agentObjects3d.length));
+    const agentObj = agentObjects3d[index];
+    agent.arrays = agentObj.arrays;
+    agent.bufferInfo = agentObj.bufferInfo;
+    agent.vao = agentObj.vao;
+    agent.translation = { x: 0.0, y: 0.0, z: 0.0 };
+    agent.scale = { x: 1.5, y: 1.5, z: 1.5 };
+    agent.color = agentObj.color;
+    scene.addObject(agent);
 
     // Create a unique little sub-object for this agent
     const littleA = new Object3D(-2000 - i);
     littleA.arrays = agent.arrays;
     littleA.bufferInfo = agent.bufferInfo;
     littleA.vao = agent.vao;
-    littleA.scale = { x: 0.1, y: 0.15, z: 0.1 };
+    littleA.scale = { x: 0.3, y: 0.35, z: 0.3 };
     littleA.translation = { x: 0.0, y: 0.1, z: 0.0 }; // Inside the same cell
-    littleA.forceColor = true;
-    littleA.color = [Math.random(), Math.random(), Math.random(), 1.0]; // Random color
+    littleA.color = [1.0, 0.84, 0.0, 1.0]; // Gold color
 
     // Attach to the main agent
     agent.subObject = littleA;
