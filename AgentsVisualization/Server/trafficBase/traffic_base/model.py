@@ -18,7 +18,7 @@ class CityModel(Model):
         self.grafo_calles=[]
         self.grafo = {}
         self.nodo_counter= 0
-        self.nodo_counter= 0
+        self.coche=False
         self.nodos = []
         
         
@@ -122,11 +122,14 @@ class CityModel(Model):
                         agent = Tierra(self, cell,)
             self.crearNodos()
             self.crearConexionesNodos()
+           
+            GlobalGraph.setNodosFinales()
+    
     def crearNodos(self):
         #Crea nodos agrupando intersecciones que existan de un mismo grupo creando nodo unicos 
         nNodos = 0
         intersecciones_visitadas = set()  # Revisa nodos que ya se hayan creado
-
+    
         # Iterar por todas las celdas del mapa
         for x in range(self.width):
             for y in range(self.height):
@@ -138,84 +141,78 @@ class CityModel(Model):
                 cell = self.grid[(x, y)]
                 
                 
-
+    
                 # Buscar si hay una intersección en la celda
                 interseccion = next((a for a in cell.agents if isinstance(a, Intersection)), None)
                 destino = next((a for a in cell.agents if isinstance(a, Destination)), None)
                 if destino is not None and destino.esNodo== False:
                         nNodos += 1
                         
-
+    
                         # Crear el nodo con ID único
                         nodo = Nodo()
                         nodo.id = self.nodo_counter
                         nodo.posicion = (destino.cell.coordinate)  # coordenadas del nodo
                         nodo.esDetino = True
                         self.nodos.append(nodo)
-                        self.nodo_counter += 1
-                        print(f"Nodo {nodo.id} creado agrupando {len(grupo_intersecciones)} intersecciones")
-                        print(f"  Posiciones: {grupo_intersecciones}")
-                        print(f"  Centro: ({int(centro_x)}, {int(centro_y)})")
-                        print(f"  Vecinos: {len(vecinos_inmediatos)}")
-                        print(f"  Es Destino: {nodo.esDetino}")
                         
-                      
+                        # Sincronizar el ID del nodo con el destino
+                        destino.idNodo(self.nodo_counter)
+                        
+                        self.nodo_counter += 1
+                       
                     
                 
-
+    
                 if interseccion is not None:
                     # Encontrar grupos de intersecciones
                     grupo_intersecciones = self.encontrarGrupoIntersecciones(x, y, intersecciones_visitadas)
-
+    
                     # Marcar todas como visitadas
                     for pos in grupo_intersecciones:
                         intersecciones_visitadas.add(pos)
-
+    
                     # Calcular el centro del grupo (promedio de posiciones)
                     centro_x = sum(pos[0] for pos in grupo_intersecciones) / len(grupo_intersecciones)
                     centro_y = sum(pos[1] for pos in grupo_intersecciones) / len(grupo_intersecciones)
-
+    
                     # Buscar vecinos desde todas las intersecciones del grupo
                     vecinos_inmediatos = self.buscarVecinosDelGrupo(grupo_intersecciones, intersecciones_visitadas)
-
+    
                     # Solo crear nodo si tiene vecinos (al menos 1 conexión saliente)
                     if len(vecinos_inmediatos) >= 1:
                         nNodos += 1
-
+    
                         # Crear el nodo con ID único
                         nodo = Nodo()
                         nodo.id = self.nodo_counter
                         nodo.posicion = (int(centro_x), int(centro_y))  # Posición central del grupo
                         nodo.intersecciones = list(grupo_intersecciones)  # Todas las intersecciones del grupo
                         nodo.vecinos = vecinos_inmediatos
-
-                        # Marcar todas las intersecciones del grupo como nodo
+    
+                        # Marcar todas las intersecciones del grupo como nodo y sincronizar el ID
                         for pos in grupo_intersecciones:
                             inter_cell = self.grid[pos]
                             inter = next((a for a in inter_cell.agents if isinstance(a, Intersection)), None)
                             if inter:
                                 inter.isNodo = True
-
+                                inter.idNodo(self.nodo_counter)  # Sincronizar el ID del nodo
+    
                         # Agregar nodo a la lista
                         self.nodos.append(nodo)
-
+    
                         # Agregar al grafo usando todas las posiciones del grupo
                         for pos in grupo_intersecciones:
                             self.grafo[pos] = nodo
-
+    
                         # Incrementar contador
                         self.nodo_counter += 1
-
-                        print(f"Nodo {nodo.id} creado agrupando {len(grupo_intersecciones)} intersecciones")
-                        print(f"  Posiciones: {grupo_intersecciones}")
-                        print(f"  Centro: ({int(centro_x)}, {int(centro_y)})")
-                        print(f"  Vecinos: {len(vecinos_inmediatos)}")
-                        print(f"  Es Destino: {nodo.esDetino}")
-
-        print(f"\n=== RESUMEN ===")
-        print(f"Se encontraron {nNodos} Nodos (grupos de intersecciones)")
-        print(f"Total de nodos en lista: {len(self.nodos)}")
-
+    
+                    
+                        
+    
+        
+        
         return nNodos
 
     def encontrarGrupoIntersecciones(self, x, y, visitadas):
@@ -260,12 +257,12 @@ class CityModel(Model):
         vecinos = []
         vecinos_encontrados = set()  # Crear nodos únicos, se evitan repetidos con el set
         
-        # Direcciones: Norte, Sur, Este, Oeste
+       
         direcciones = [
-            (0, 1, "Norte"),
-            (0, -1, "Sur"),
-            (1, 0, "Este"),
-            (-1, 0, "Oeste")
+            (0, 1, "Arriba"),
+            (0, -1, "Abajo"),
+            (1, 0, "Derecha"),
+            (-1, 0, "Izquierda")
         ]
         
         # Para cada intersección del grupo
@@ -320,7 +317,7 @@ class CityModel(Model):
         return vecinos
     
     def crearAutos(self, stepsSpawm):
-     posiciones = [(0,0), (23,23), (0,23), (23,0)]
+     posiciones = [(0,0),(23,23), (0,23), (23,0)]
      
      if self.steps % stepsSpawm != 0:
          return
@@ -332,23 +329,21 @@ class CityModel(Model):
          # Verificar si ya hay un carro EN ESTA CELDA ESPECÍFICA
          carros_en_celda = [agent for agent in cell.agents if isinstance(agent, Car)]
          
-         if carros_en_celda:
-             # Debug: ver si el carro realmente está ahí o es un error de registro
-             print(f"INFO: Carros en {pos}: {len(carros_en_celda)}")
-             for carro in carros_en_celda:
-                 print(f"  - Carro {carro.unique_id} dice estar en {carro.cell.coordinate}")
-             continue
+        
          
          # Verificar que haya una Road en esta posición
          tiene_road = any(isinstance(agent, Road) for agent in cell.agents)
          
          if not tiene_road:
-             print(f"WARNING: No hay Road en {pos}, no se puede crear auto")
+             
              continue
          
          # Crear el carro
-         print(f"✓ Creando auto en: {pos}")
-         car = Car(self, cell)
+   
+         ruta= GlobalGraph.obtenerRutaAleatoria(cell)
+         car = Car(self, cell,ruta)
+        
+            
          # NO hace falta hacer cell.add_agent(car) si ya lo haces en __init__ de Car
     def crearConexionesNodos(self):
         """
@@ -356,8 +351,7 @@ class CityModel(Model):
         Un nodo puede conectarse a otro si siguiendo el flujo de tráfico (dirección de Roads)
         se puede llegar desde una posición del nodo origen a una posición del nodo destino.
         """
-        print("\n=== CREANDO CONEXIONES ENTRE NODOS ===\n")
-
+    
         # Mapeo de direcciones de Road a vectores de movimiento
         direcciones_road = {
             '<': (-1, 0),  # Izquierda
@@ -365,7 +359,15 @@ class CityModel(Model):
             '^': (0, 1),   # Arriba
             'v': (0, -1)   # Abajo
         }
-
+        
+        # Mapeo inverso: de vector a nombre de dirección
+        vector_a_nombre = {
+            (-1, 0): 'Izquierda',
+            (1, 0): 'Derecha',
+            (0, 1): 'Arriba',
+            (0, -1): 'Abajo'
+        }
+    
         # Para cada nodo en la lista
         for nodo_origen in self.nodos:
             # Los nodos destino son finales, no tienen conexiones salientes
@@ -373,104 +375,144 @@ class CityModel(Model):
                 continue
             
             conexiones_encontradas = set()  # Evitar conexiones duplicadas
-
+    
             # Obtener posiciones del nodo origen
             posiciones_origen = nodo_origen.intersecciones if hasattr(nodo_origen, 'intersecciones') else [nodo_origen.posicion]
-
+    
             # Desde cada posición del nodo origen
             for pos_origen in posiciones_origen:
                 ox, oy = pos_origen
-
+    
                 # Verificar que la posición esté en el grid
                 if not (0 <= ox < self.width and 0 <= oy < self.height):
                     continue
                 
                 cell_origen = self.grid[(ox, oy)]
-
+    
                 # Buscar todas las Roads adyacentes desde esta intersección
                 for vecino in cell_origen.neighborhood:
                     vx, vy = vecino.coordinate
-
+    
                     # Buscar si hay una Road en esta celda vecina
                     road = next((a for a in vecino.agents if isinstance(a, Road)), None)
-
+    
                     if road is None:
                         continue
                     
                     # Obtener la dirección de la carretera
                     direccion_char = road.char if hasattr(road, 'char') else road.direction
-
+    
                     if direccion_char not in direcciones_road:
                         continue
                     
                     # Verificar que podemos entrar a esta carretera desde nuestra posición
-                    # La carretera debe estar en la dirección correcta desde el origen
                     dx_carretera, dy_carretera = direcciones_road[direccion_char]
-
-                    # Calcular hacia dónde está el vecino desde nuestra posición
                     dx_hacia_vecino = vx - ox
                     dy_hacia_vecino = vy - oy
-
-                    # Normalizar (solo nos importa la dirección, no la magnitud)
+    
+                    # Normalizar
                     if dx_hacia_vecino != 0:
                         dx_hacia_vecino = dx_hacia_vecino // abs(dx_hacia_vecino)
                     if dy_hacia_vecino != 0:
                         dy_hacia_vecino = dy_hacia_vecino // abs(dy_hacia_vecino)
-
+    
                     # La carretera debe ir en la misma dirección que queremos ir
-                    # o al menos no ir en dirección contraria
                     if (dx_carretera == -dx_hacia_vecino and dx_hacia_vecino != 0) or \
                        (dy_carretera == -dy_hacia_vecino and dy_hacia_vecino != 0):
-                        # La carretera va en sentido contrario
+                        continue
+                    
+                    # GUARDAR LA DIRECCIÓN INICIAL (la dirección de la primera carretera)
+                    direccion_inicial = vector_a_nombre.get((dx_carretera, dy_carretera), None)
+                    
+                    if direccion_inicial is None:
                         continue
                     
                     # Ahora seguimos el camino desde esta carretera
                     cx, cy = vx, vy
                     pasos = 1
                     max_pasos = max(self.width, self.height) * 2
-
+    
                     while pasos < max_pasos:
                         # Verificar límites
                         if not (0 <= cx < self.width and 0 <= cy < self.height):
                             break
                         
                         current_cell = self.grid[(cx, cy)]
-
-                        # Verificar si encontramos un nodo destino
+    
+                        # PRIMERO: Verificar si encontramos un nodo destino EN LA CELDA ACTUAL
                         destino = next((a for a in current_cell.agents if isinstance(a, Destination)), None)
                         if destino is not None:
-                            # Buscar el nodo correspondiente
-                            nodo_destino = next((n for n in self.nodos if n.posicion == (cx, cy) and n.esDetino), None)
-                            if nodo_destino and nodo_destino.id not in conexiones_encontradas and nodo_destino.id != nodo_origen.id:
+                            # Buscar el nodo correspondiente por posición exacta
+                            nodo_destino = next(
+                                (n for n in self.nodos 
+                                 if n.esDetino and n.posicion == (cx, cy)), 
+                                None
+                            )
+    
+                            if nodo_destino and nodo_destino.id not in conexiones_encontradas:
                                 conexiones_encontradas.add(nodo_destino.id)
                                 if not hasattr(nodo_origen, 'conexiones'):
                                     nodo_origen.conexiones = []
+    
                                 nodo_origen.conexiones.append({
                                     'nodo_id': nodo_destino.id,
                                     'posicion': nodo_destino.posicion,
+                                    'direccion': direccion_inicial,  # ← DIRECCIÓN CORRECTA
                                     'desde': pos_origen,
                                     'distancia': pasos
                                 })
                             break
                         
-                        # Verificar si encontramos una intersección (otro nodo)
+                        # VERIFICAR CELDAS ADYACENTES para destinos (los destinos están al lado de las carreteras)
+                        for dx_adj, dy_adj in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                            adj_x, adj_y = cx + dx_adj, cy + dy_adj
+    
+                            # Verificar límites
+                            if not (0 <= adj_x < self.width and 0 <= adj_y < self.height):
+                                continue
+                            
+                            adj_cell = self.grid[(adj_x, adj_y)]
+                            destino_adj = next((a for a in adj_cell.agents if isinstance(a, Destination)), None)
+    
+                            if destino_adj is not None:
+                                # Buscar el nodo correspondiente
+                                nodo_destino = next(
+                                    (n for n in self.nodos 
+                                     if n.esDetino and n.posicion == (adj_x, adj_y)), 
+                                    None
+                                )
+    
+                                if nodo_destino and nodo_destino.id not in conexiones_encontradas:
+                                    conexiones_encontradas.add(nodo_destino.id)
+                                    if not hasattr(nodo_origen, 'conexiones'):
+                                        nodo_origen.conexiones = []
+    
+                                    nodo_origen.conexiones.append({
+                                        'nodo_id': nodo_destino.id,
+                                        'posicion': nodo_destino.posicion,
+                                        'direccion': direccion_inicial,  # ← DIRECCIÓN CORRECTA
+                                        'desde': pos_origen,
+                                        'distancia': pasos + 1  # +1 porque está al lado
+                                    })
+    
+                        # SEGUNDO: Verificar si encontramos una intersección (otro nodo)
                         interseccion = next((a for a in current_cell.agents if isinstance(a, Intersection)), None)
                         if interseccion is not None and interseccion.isNodo:
                             # Buscar el nodo correspondiente en el grafo
                             if (cx, cy) in self.grafo:
                                 nodo_destino = self.grafo[(cx, cy)]
-
+    
                                 # Evitar conectar el nodo consigo mismo
                                 if nodo_destino.id != nodo_origen.id and nodo_destino.id not in conexiones_encontradas:
                                     conexiones_encontradas.add(nodo_destino.id)
-
-                                    # Agregar la conexión
+    
                                     if not hasattr(nodo_origen, 'conexiones'):
                                         nodo_origen.conexiones = []
-
+    
                                     nodo_origen.conexiones.append({
                                         'nodo_id': nodo_destino.id,
                                         'posicion': nodo_destino.posicion,
+                                        'direccion': direccion_inicial,  # ← DIRECCIÓN CORRECTA
                                         'desde': pos_origen,
                                         'distancia': pasos
                                     })
@@ -483,43 +525,38 @@ class CityModel(Model):
                         
                         # Buscar la carretera actual
                         current_road = next((a for a in current_cell.agents if isinstance(a, Road)), None)
-
+    
                         if current_road is None:
                             break
                         
                         # Obtener la dirección de la carretera actual
                         current_dir = current_road.char if hasattr(current_road, 'char') else current_road.direction
-
+    
                         if current_dir not in direcciones_road:
                             break
                         
                         # Seguir en la dirección que indica la carretera
                         dx_carretera, dy_carretera = direcciones_road[current_dir]
-
-                        # Avanzar en esa dirección
                         cx += dx_carretera
                         cy += dy_carretera
                         pasos += 1
-
+    
         # Imprimir resumen de conexiones
-        print("\n=== RESUMEN DE CONEXIONES ===\n")
         for nodo in self.nodos:
             tipo = "DESTINO" if nodo.esDetino else "INTERSECCIÓN"
             num_conexiones = len(nodo.conexiones) if hasattr(nodo, 'conexiones') else 0
-
-            print(f"Nodo {nodo.id} ({tipo}) en {nodo.posicion}:")
-            print(f"  Conexiones: {num_conexiones}")
-
-            if hasattr(nodo, 'conexiones') and nodo.conexiones:
-                for conn in nodo.conexiones:
-                    print(f"    -> Nodo {conn['nodo_id']} en {conn['posicion']} (distancia: {conn['distancia']})")
-            else:
-                print(f"    (Sin conexiones salientes)")
-            print()
-
-        print(f"Total de nodos: {len(self.nodos)}")
+            
+            # Mostrar las conexiones con sus direcciones
+            if hasattr(nodo, 'conexiones') and num_conexiones > 0:
+                print(f"\nNodo {nodo.id} ({tipo}) en {nodo.posicion}:")
+                for con in nodo.conexiones:
+                    print(f"  → Nodo {con['nodo_id']} - Dirección: {con['direccion']} - Distancia: {con['distancia']}")
+           
+            GlobalGraph.agregar_nodo(nodo)
+    
         total_conexiones = sum(len(n.conexiones) if hasattr(n, 'conexiones') else 0 for n in self.nodos)
-        print(f"Total de conexiones: {total_conexiones}\n")
+        print(f"\n✅ Total de conexiones creadas: {total_conexiones}")
+        
 
     def step(self):
         
