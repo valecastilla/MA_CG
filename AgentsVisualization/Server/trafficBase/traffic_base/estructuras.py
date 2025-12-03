@@ -12,12 +12,10 @@ class GlobalGraph:
     
     @staticmethod
     def agregar_nodo(nodo):
-        """Agrega un nodo a la lista global"""
         GlobalGraph.nodos.append(nodo)
     
     @staticmethod
     def limpiar():
-        """Limpia el grafo y la lista de nodos"""
         GlobalGraph.grafo = {}
         GlobalGraph.nodos = []
     @staticmethod
@@ -35,17 +33,7 @@ class GlobalGraph:
     
     @staticmethod
     def calcular_direccion(pos_origen, pos_destino):
-        """
-        Calcula la dirección desde pos_origen hacia pos_destino.
-        
-        Args:
-            pos_origen: Tupla (x, y) del punto de origen
-            pos_destino: Tupla (x, y) del punto de destino
-            
-        Returns:
-            String con la dirección: 'Norte', 'Sur', 'Este', 'Oeste', 
-            'Noreste', 'Noroeste', 'Sureste', 'Suroeste', o 'Misma posición'
-        """
+       
         ox, oy = pos_origen
         dx, dy = pos_destino
         
@@ -53,7 +41,7 @@ class GlobalGraph:
         diff_x = dx - ox
         diff_y = dy - oy
         
-        # Determinar dirección principal
+        
         if diff_x == 0 and diff_y > 0:
             return "Arriba"
         elif diff_x == 0 and diff_y < 0:
@@ -62,16 +50,17 @@ class GlobalGraph:
             return "Derecha"
         elif diff_x < 0 and diff_y == 0:
             return "Izquierda"
-        elif diff_x > 0 and diff_y > 0:
-            return "ArribaDerecha"
-        elif diff_x < 0 and diff_y > 0:
-            return "ArribaIzquierda"
-        elif diff_x > 0 and diff_y < 0:
-            return "AbajoDerecha"
-        elif diff_x < 0 and diff_y < 0:
-            return "AbajoIzquierda"
-        else:
+        elif diff_x == 0 and diff_y == 0:
             return "Misma posición"
+        else:
+    
+            if abs(diff_x) > abs(diff_y):
+          
+                return "Derecha" if diff_x > 0 else "Izquierda"
+            else:
+               
+                return "Arriba" if diff_y > 0 else "Abajo"
+    
     @staticmethod
     def setNodosFinales ():
         for nodo in GlobalGraph.nodos:
@@ -83,11 +72,8 @@ class GlobalGraph:
       
     @staticmethod
     def agregar_direccion_a_conexiones():
-        """
-        Agrega la dirección a todas las conexiones existentes de todos los nodos.
-        Debe llamarse DESPUÉS de crear todos los nodos y sus conexiones.
-        """
-        print("\n=== AGREGANDO DIRECCIONES A CONEXIONES ===")
+      
+
         
         for nodo in GlobalGraph.nodos:
             if not hasattr(nodo, 'conexiones') or not nodo.conexiones:
@@ -107,22 +93,12 @@ class GlobalGraph:
                 # Agregar la dirección a la conexión
                 conexion['direccion'] = direccion
                 
-                print(f"Nodo {nodo.id} -> Nodo {conexion['nodo_id']}: {direccion}")
-        
+             
         
     
     @staticmethod
     def obtener_direccion_entre_nodos(nodo_origen_id, nodo_destino_id):
-        """
-        Calcula la dirección directa entre dos nodos (sin seguir ruta)
-        
-        Args:
-            nodo_origen_id: ID del nodo de origen
-            nodo_destino_id: ID del nodo de destino
-            
-        Returns:
-            String con la dirección o None si algún nodo no existe
-        """
+    
         nodo_origen = GlobalGraph.obtener_nodo_por_id(nodo_origen_id)
         nodo_destino = GlobalGraph.obtener_nodo_por_id(nodo_destino_id)
         
@@ -133,23 +109,7 @@ class GlobalGraph:
     
     @staticmethod
     def obtener_siguiente_nodo_y_direccion(nodo_actual_id, nodo_destino_id):
-        """
-        Obtiene el siguiente nodo en la ruta y la dirección para llegar a él
-        
-        Args:
-            nodo_actual_id: ID del nodo actual
-            nodo_destino_id: ID del nodo destino final
-            
-        Returns:
-            Diccionario con:
-            {
-                'siguiente_nodo_id': int,
-                'direccion': str,
-                'posicion': tuple,
-                'distancia': int
-            }
-            o None si no hay ruta
-        """
+  
         ruta = GlobalGraph.buscar_ruta_bfs(nodo_actual_id, nodo_destino_id)
         
         if ruta is None or len(ruta) < 2:
@@ -167,10 +127,7 @@ class GlobalGraph:
     
     @staticmethod
     def imprimir():
-        """Imprime información del grafo"""
-        print("\n=== GRAFO GLOBAL ===")
-        print(f"Total de nodos: {len(GlobalGraph.nodos)}")
-        print(f"Total de entradas en grafo: {len(GlobalGraph.grafo)}")
+       
         
         for nodo in GlobalGraph.nodos:
             tipo = "DESTINO" if nodo.esDetino else "INTERSECCIÓN"
@@ -187,7 +144,7 @@ class GlobalGraph:
     
     @staticmethod
     def obtener_nodo_por_id(nodo_id):
-        """Busca un nodo por su ID"""
+       
         for nodo in GlobalGraph.nodos:
             if nodo.id == nodo_id:
                 return nodo
@@ -195,12 +152,8 @@ class GlobalGraph:
     
     @staticmethod
     def obtener_nodo_por_posicion(posicion):
-        """Busca un nodo por su posición"""
-        # Primero buscar en el diccionario grafo
         if posicion in GlobalGraph.grafo:
             return GlobalGraph.grafo[posicion]
-        
-        # Si no está, buscar en la lista de nodos
         for nodo in GlobalGraph.nodos:
             if nodo.posicion == posicion:
                 return nodo
@@ -208,15 +161,7 @@ class GlobalGraph:
     
     @staticmethod
     def encontrar_nodo_mas_cercano(posicion_actual):
-        """
-        Encuentra el nodo más cercano a una posición dada
-        
-        Args:
-            posicion_actual: Tupla (x, y) de la posición actual
-            
-        Returns:
-            Nodo más cercano o None si no hay nodos
-        """
+       
         if not GlobalGraph.nodos:
             return None
         
@@ -242,7 +187,7 @@ class GlobalGraph:
             if interseccion is not None:
                 nNodos += 1
         
-        print(f"Se encontraron {nNodos} Nodos")
+     
         return nNodos
     
     @staticmethod
@@ -251,18 +196,7 @@ class GlobalGraph:
     
     @staticmethod
     def buscar_ruta_bfs(nodo_origen_id, nodo_destino_id):
-        """
-        Busca la ruta más corta entre dos nodos usando BFS (Búsqueda por Anchura)
-        
-        Args:
-            nodo_origen_id: ID del nodo de inicio
-            nodo_destino_id: ID del nodo de destino
-            
-        Returns:
-            Lista de diccionarios con información de cada paso:
-            [{'nodo_id': int, 'posicion': tuple, 'direccion': str}, ...]
-            o None si no hay ruta
-        """
+       
         # Obtener los nodos
         nodo_origen = GlobalGraph.obtener_nodo_por_id(nodo_origen_id)
         nodo_destino = GlobalGraph.obtener_nodo_por_id(nodo_destino_id)
@@ -348,62 +282,18 @@ class GlobalGraph:
     
     @staticmethod
     def imprimir_ruta(nodo_origen_id, nodo_destino_id):
-        """
-        Busca e imprime la ruta entre dos nodos con direcciones
-        
-        Args:
-            nodo_origen_id: ID del nodo de inicio
-            nodo_destino_id: ID del nodo de destino
-            
-        Returns:
-            Lista con la ruta detallada o None si no existe
-        """
-        print(f"\n=== BÚSQUEDA DE RUTA ===")
-        print(f"Origen: Nodo {nodo_origen_id}")
-        print(f"Destino: Nodo {nodo_destino_id}")
+       
         
         ruta = GlobalGraph.buscar_ruta_bfs(nodo_origen_id, nodo_destino_id)
-        print(f"\n===  RUTA ===")
-        print(ruta)        
+        #print(ruta)        
         if ruta is None:
-            print(f"\n❌ NO SE PUEDE llegar del nodo {nodo_origen_id} al nodo {nodo_destino_id}")
-            print("No existe una ruta que conecte estos nodos.")
+            print("no hay ruta entre estos nodos")
         else:
-            print(f"\n✓ RUTA ENCONTRADA (longitud: {len(ruta)} nodos):")
-            
-            # Imprimir resumen simple
-            ruta_ids = " -> ".join(str(paso['nodo_id']) for paso in ruta)
-            print(f"Secuencia: {ruta_ids}")
-            
-            # Imprimir detalles paso a paso
-            print("\n📍 Detalles de la ruta:")
-            for i, paso in enumerate(ruta):
-                if i == 0:
-                    print(f"  {i+1}. Inicio en Nodo {paso['nodo_id']} (posición {paso['posicion']})")
-                else:
-                    direccion = paso['direccion']
-                    distancia = paso.get('distancia', 'N/A')
-                    print(f"  {i+1}. Ir hacia el {direccion} → Nodo {paso['nodo_id']} (posición {paso['posicion']})")
-                    print(f"      Distancia desde nodo anterior: {distancia} pasos")
-            
-            # Calcular distancia total
-            distancia_total = sum(paso.get('distancia', 0) for paso in ruta[1:])
-            print(f"\n📏 Distancia total: {distancia_total} pasos")
-        
-        return ruta
+            return ruta
     
     @staticmethod
     def obtener_siguiente_direccion(nodo_actual_id, nodo_destino_id):
-        """
-        Obtiene solo la dirección hacia el siguiente nodo en la ruta más corta
-        
-        Args:
-            nodo_actual_id: ID del nodo actual
-            nodo_destino_id: ID del nodo destino final
-            
-        Returns:
-            String con la dirección (Norte, Sur, Este, Oeste, etc.) o None
-        """
+      
         info = GlobalGraph.obtener_siguiente_nodo_y_direccion(nodo_actual_id, nodo_destino_id)
         return info['direccion'] if info else None
 

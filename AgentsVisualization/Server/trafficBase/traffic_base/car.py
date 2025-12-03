@@ -21,85 +21,307 @@ class Car(CellAgent):
         self.estadoMovimiento=""
         self.direccionMovimiento=""
         self.ruta= ruta
+        self.debe_eliminarse = False
         print(self.ruta)
         self.nodoactual = ""
-        self.indexActual =0
-        self.isNodoFinal=False
-        self.nodofinal=GlobalGraph.obtener_nodo_por_id(self.ruta[len(self.ruta) - 1]["nodo_id"])
+        self.indexActual = 0
+        self.direction = ""
+        self.isNodoFinal = False
+        self.nodofinal = GlobalGraph.obtener_nodo_por_id(self.ruta[len(self.ruta) - 1]["nodo_id"])
         print(self.nodofinal)
-      
-      
-    
-    def seguirRuta(self):
-        intersection = next((a for a in self.cell.agents if isinstance(a, Intersection)), None)
+        self.direcionPatitas=""
+        self.estadoAnterior = ""
+        self.xf, self.yf=self.ruta[len(self.ruta) - 1]["posicion"]
+        self.x, self.y = self.cell.coordinate
+        
+        # Inicializar la primera dirección
+        if len(self.ruta) > 1:
+            self.direccionMovimiento = self.ruta[1]["direccion"]
        
-        if intersection!= None:
-            print(intersection.idNodoInter)
-            for index, nodo in enumerate(self.ruta):
-                
-                if nodo.get("nodo_id") == intersection.idNodoInter:
-                    self.nodoactual, self.indexActual= nodo, index
-            print("direccion:")
-            print("index")
+    def seguirRuta(self):
+      
+     xf, yf = self.ruta[len(self.ruta) - 1]["posicion"]
+     
+     # Validación temprana
+     if self.cell is None:
+         print("Error: self.cell es None")
+         return
+         
+     next_moves = self.cell.neighborhood
+     x, y = self.cell.coordinate
+ 
+     vecinos = {
+         "izquierda": None,
+         "derecha": None,
+         "arriba": None,
+         "abajo": None,
+         "izquierdaAbajo": None,
+         "derechaAbajo": None,
+         "derechaArriba": None,
+         "izquierdaArriba": None,
+     }
+ 
+     for vecino in next_moves:
+         if vecino is None:
+             continue
+ 
+         cx, cy = vecino.coordinate
+ 
+         if   (cx, cy) == (x - 1, y) and any(isinstance(a, (Road, Destination, Obstacle)) for a in vecino.agents): 
+             vecinos["izquierda"] = vecino
+         elif (cx, cy) == (x + 1, y) and any(isinstance(a, (Road, Destination, Obstacle)) for a in vecino.agents): 
+             vecinos["derecha"] = vecino
+         elif (cx, cy) == (x, y + 1) and any(isinstance(a, (Road, Destination, Obstacle)) for a in vecino.agents): 
+             vecinos["arriba"] = vecino
+         elif (cx, cy) == (x, y - 1) and any(isinstance(a, (Road, Destination, Obstacle)) for a in vecino.agents): 
+             vecinos["abajo"] = vecino
+         elif (cx, cy) == (x - 1, y - 1) and any(isinstance(a, (Road, Destination, Obstacle)) for a in vecino.agents): 
+             vecinos["izquierdaAbajo"] = vecino
+         elif (cx, cy) == (x + 1, y - 1) and any(isinstance(a, (Road, Destination, Obstacle)) for a in vecino.agents): 
+             vecinos["derechaAbajo"] = vecino
+         elif (cx, cy) == (x + 1, y + 1) and any(isinstance(a, (Road, Destination, Obstacle)) for a in vecino.agents): 
+             vecinos["derechaArriba"] = vecino
+         elif (cx, cy) == (x - 1, y + 1) and any(isinstance(a, (Road, Destination, Obstacle)) for a in vecino.agents): 
+             vecinos["izquierdaArriba"] = vecino
+     
+     arriba = vecinos["arriba"]
+     abajo = vecinos["abajo"]
+     izquierda = vecinos["izquierda"]
+     derecha = vecinos["derecha"]
+     arribaIzquierda = vecinos["izquierdaArriba"]
+     arribaDerecha = vecinos["derechaArriba"]
+     abajoDerecha = vecinos["derechaAbajo"]
+     abajoIzquierda = vecinos["izquierdaAbajo"]
+     
+     # Variable para controlar si el agente debe moverse
+     debe_detenerse = False
+     
+     def tiene_semaforo_rojo(celda):
+         """
+         Verifica si hay un semáforo en rojo en la celda dada.
+         Si encuentra semáforo en rojo, marca debe_detenerse como True.
+         """
+         nonlocal debe_detenerse  # Para modificar la variable externa
+         
+         if celda is None:
+             return
+         
+         semaforo = next((a for a in celda.agents if isinstance(a, Traffic_Light)), None)
+         
+         if semaforo is not None and not semaforo.state:
+             
+             debe_detenerse = True  # Marca para detener el movimiento
+             return
+         
+         return
+     def encontroObstaculo(direccion):
+        if direccion == "Arriba":
+            if arriba is None:
+                return False
+            return any(isinstance(a, (Car, Obstacle)) for a in arriba.agents)
 
+        elif direccion == "Abajo":
+            if abajo is None:
+                return False
+            return any(isinstance(a, (Car, Obstacle)) for a in abajo.agents)
 
-            print(self.ruta[self.indexActual + 1]["direccion"])   
-            self.direccionMovimiento=self.ruta[self.indexActual + 1]["direccion"]
+        elif direccion == "Derecha":
+            if derecha is None:
+                return False
+            return any(isinstance(a, (Car, Obstacle)) for a in derecha.agents)
+
+        elif direccion == "Izquierda":
+            if izquierda is None:
+                return False
+            return any(isinstance(a, (Car, Obstacle)) for a in izquierda.agents)
+
+         
+     
+     def llego():
+         print(f"🎯 Carro llegó a destino en posición ({xf}, {yf})")
+         self.debe_eliminarse = True  
+         
+     # CAMBIO IMPORTANTE: Estas funciones ya no retornan True/False
+     def estado_ARRIBA():
+         if encontroObstaculo("Arriba"):
+             print("encontroObstaculo")
+             
+         tiene_semaforo_rojo(arriba)
+         
+         
+         
+         if debe_detenerse:
+             print("🛑 Detenido por semáforo en rojo")
+             return
+             
+         if self.isNodoFinal:
+             if y == yf:
+                 if x > xf:
+                     self.direction = "Izquierda"
+                     return
+                 elif x < xf:
+                     self.direction = "Derecha"
+                     return
+                 else: 
+                     llego()
+                     return
+         
+         self.direction = "Arriba"
+     
+     def estado_ABAJO():
+         
+         tiene_semaforo_rojo(abajo)
+         if debe_detenerse:
+             print("🛑 Detenido por semáforo en rojo")
+             return
+         if encontroObstaculo("Abajo"):
+             print("encontroObstaculo")
+             
+         if self.isNodoFinal:
+             if y == yf:
+                 if x > xf:
+                     self.direction = "Izquierda"
+                     return
+                 elif x < xf:
+                     self.direction = "Derecha"
+                     return
+                 else: 
+                     llego()
+                     return
+         
+         self.direction = "Abajo"
+     
+     def estado_IZQUIERDA():
+         tiene_semaforo_rojo(izquierda)
+         if debe_detenerse:
+             print("🛑 Detenido por semáforo en rojo")
+             return
+         if encontroObstaculo("Izquierda"):
+             print("encontroObstaculo")
+         if self.isNodoFinal:
+             if x == xf:
+                 if y > yf:
+                     self.direction = "Abajo"
+                     return
+                 elif y < yf:
+                     self.direction = "Arriba"
+                     return
+                 else:
+                     llego()
+                     return
+         
+         self.direction = "Izquierda"
+     
+     def estado_DERECHA():
+         tiene_semaforo_rojo(derecha)
+         if debe_detenerse:
+             print("🛑 Detenido por semáforo en rojo")
+             return
+         if encontroObstaculo("Derecha"):
+             print("encontroObstaculo" )
+         if self.isNodoFinal:
+             if x == xf:
+                 if y > yf:
+                     self.direction = "Abajo"
+                     return
+                 elif y < yf:
+                     self.direction = "Arriba"
+                     return
+                 else:
+                     llego()
+                     return
+         
+         self.direction = "Derecha"
+     
+     def estado_SEMAFORO():
+         print("En semáforo")
+     
+     tabla_estados = {
+         "Arriba": estado_ARRIBA,
+         "Abajo": estado_ABAJO,
+         "Izquierda": estado_IZQUIERDA,
+         "Derecha": estado_DERECHA,
+         "semaforo": estado_SEMAFORO,
+     }
+             
+     intersection = next((a for a in self.cell.agents if isinstance(a, Intersection)), None)
+    
+     if intersection is not None:
+         print(intersection.idNodoInter)
+         for index, nodo in enumerate(self.ruta):
+             if nodo.get("nodo_id") == intersection.idNodoInter:
+                 self.nodoactual, self.indexActual = nodo, index
+                 break
+         
+         if self.indexActual + 1 < len(self.ruta):
+             print(self.ruta[self.indexActual + 1]["direccion"])   
+             
+             if self.ruta[self.indexActual + 1]["nodo_id"] == self.nodofinal.id:
+                 self.isNodoFinal = True
+                 print("Llegó al nodo final")
+             
+             self.direccionMovimiento = self.ruta[self.indexActual + 1]["direccion"]
+         else:
+             print("Llegó al final de la ruta")
+             self.isNodoFinal = True
+             return
+     
+     # Actualizar dirección
+     if self.direccionMovimiento in tabla_estados:
+         tabla_estados[self.direccionMovimiento]()
+     
+     # Si debe detenerse (semáforo rojo), NO mover
+     if debe_detenerse:
+         return  # Salir sin ejecutar move_to()
+     
+     # Mapeo de direcciones
+     direcciones = {
+         "Arriba": arriba,
+         "Abajo": abajo,
+         "Derecha": derecha,
+         "Izquierda": izquierda,
+         "Arribaderecha": arribaDerecha,
+         "Arribaizquierda": arribaIzquierda,
+         "Abajoderecha": abajoDerecha,
+         "Abajoizquierda": abajoIzquierda
+     }
+ 
+     destino = direcciones.get(self.direction)
+     
+     # Validar que destino no es None antes de mover
+     if destino is not None:
+         self.move_to(destino)
+     else:
+         print(f"⚠️ No se encontró celda destino para dirección '{self.direction}'")
+         print(f"Posición actual: {self.cell.coordinate}")
+
+    def moverse(self):
+        if self.cell is None:
+            print("Error: self.cell es None en moverse()")
+            return  # evita crash si el agente no tiene celda aún
+    
+       
             
 
-        
-    def moverse(self):
-        # Actualizar dirección según la ruta
         self.seguirRuta()
 
-        if not self.direccionMovimiento:
-            return  # no hay más nodos
-
-        # Mapa de tus direcciones → desplazamientos reales
-        mapeo = {
-            "Arriba": (0, 1),
-            "Abajo": (0, -1),
-            "Izquierda": (-1, 0),
-            "Derecha": (1, 0),
-
-            # diagonales si las usas
-            "ArribaIzquierda": (-1, 1),
-            "ArribaDerecha": (1, 1),
-            "AbajoIzquierda": (-1, -1),
-            "AbajoDerecha": (1, -1)
-        }
-
-        dxdy = mapeo.get(self.direccionMovimiento)
-
-        if dxdy is None:
-            print("Dirección no reconocida:", self.direccionMovimiento)
-            return
-
-        x, y = self.cell.coordinate
-        dx, dy = dxdy
-        coord_destino = (x + dx, y + dy)
-
-        # Buscar la celda destino
-        try:
-            destino = self.model.grid[coord_destino]
-        except Exception:
-            print("Destino fuera del grid:", coord_destino)
-            return
-
-        # Obstáculos
-        if any(isinstance(a, Obstacle) for a in destino.agents):
-            return
-
-        # Otro carro
-        if any(isinstance(a, Car) for a in destino.agents):
-            return
-
-        # Todo OK → mover
-        self.move_to(destino)
-
-            
     def move(self):
         self.moverse()
         
     def step(self):
+        if self.debe_eliminarse:
+            try:
+                # Remover de la celda
+                if self.cell is not None:
+                    self.cell.remove_agent(self)
+
+                # Remover del modelo
+                if self in self.model.agents:
+                    self.model.agents.remove(self)
+
+                print("✅ Carro eliminado correctamente")
+                return  # Salir sin ejecutar move()
+            except Exception as e:
+                print(f"⚠️ Error al eliminar carro: {e}")
+                return
         self.move()
