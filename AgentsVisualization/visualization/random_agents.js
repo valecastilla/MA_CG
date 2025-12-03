@@ -42,8 +42,20 @@ import {
 import vsGLSL from "../assets/shaders/vs_phong_302.glsl?raw";
 import fsGLSL from "../assets/shaders/fs_phong_302.glsl?raw";
 
+import vsGLSLsb from "../assets/shaders/vs_flat_textures.glsl?raw";
+import fsGLSLsb from "../assets/shaders/fs_flat_textures.glsl?raw";
+
 //import vsGLSL from "../assets/shaders/vs_multi_lights_attenuation.glsl?raw";
 //import fsGLSL from "../assets/shaders/fs_multi_lights_attenuation.glsl?raw";
+
+// Skybox
+// Skybox
+import skyPx from "../assets/obj/3d/skybox/px.png";
+import skyNx from "../assets/obj/3d/skybox/nx.png";
+import skyPy from "../assets/obj/3d/skybox/py.png";
+import skyNy from "../assets/obj/3d/skybox/ny.png";
+import skyPz from "../assets/obj/3d/skybox/pz.png";
+import skyNz from "../assets/obj/3d/skybox/nz.png";
 
 // Destination
 import objTextDestination from "../assets/obj/3d/canasta/canasta1.obj?raw";
@@ -151,6 +163,7 @@ const scene = new Scene3D();
 
 // Global variables
 let phongProgramInfo = undefined;
+let textureProgramInfo = undefined;
 let gl = undefined;
 const duration = 1000; // ms
 let elapsed = 0;
@@ -166,6 +179,7 @@ async function main() {
 
   // Prepare the program with the shaders
   phongProgramInfo = twgl.createProgramInfo(gl, [vsGLSL, fsGLSL]);
+  textureProgramInfo = twgl.createProgramInfo(gl, [vsGLSLsb, fsGLSLsb]);
 
   // Initialize the agents model
   await initAgentsModel();
@@ -183,6 +197,8 @@ async function main() {
 
   // Position the objects in the scene
   setupObjects(scene, gl, phongProgramInfo);
+  // Skybox
+  setupSkybox(scene, gl, textureProgramInfo);
 
   // Prepare the user interface
   setupUI();
@@ -254,14 +270,6 @@ function setupObjects(scene, gl, programInfo) {
   // Create VAOs for the different shapes
   //baseCube = new Object3D(-1);
   baseCube.prepareVAO(gl, programInfo, objTextAgent1);
-
-  // Skybox
-  const skybox = new Object3D(-7);
-  skybox.prepareVAO(gl, programInfo, objTextSkybox);
-  skybox.translation = { x: 11.0, y: 0.0, z: 11.0 };
-  skybox.scale = { x: 1.25, y: 2.0, z: 1.25 };
-  skybox.color = [119/255, 150/255, 203/255, 1.0];
-  scene.addObject(skybox);
 
   // Obstacles
   let obstacleObjects3d = [];
@@ -395,6 +403,30 @@ function setupObjects(scene, gl, programInfo) {
   }
 }
 
+function setupSkybox(scene, gl, programInfo) {
+  const skybox = new Object3D(-7);
+  skybox.prepareVAO(gl, programInfo, objTextSkybox);
+
+  // Position and scale
+  skybox.translation = { x: 11.0, y: 0.0, z: 11.0 };
+  skybox.scale = { x: 2.0, y: 2.0, z: 2.0 };
+
+  // Create a 2D texture
+  skybox.texture = twgl.createTexture(gl, {
+    src: skyPx,            
+    min: gl.LINEAR_MIPMAP_LINEAR,
+    mag: gl.LINEAR,
+    wrap: gl.CLAMP_TO_EDGE,
+  });
+
+  // Let the texture control the color
+  skybox.forceColor = false;
+  skybox.color = [1, 1, 1, 1];
+
+  scene.addObject(skybox);
+}
+
+
 // Draw an object with its corresponding transformations
 function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   // Prepare the vector for translation and scale
@@ -468,6 +500,9 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
     u_useDiffuseMap: object.texture ? true : false,
     u_forceDiffuseColor: object.forceColor ? true : false,
     u_diffuseMap: object.texture,
+    // Provide a common sampler name used by the simple texture shader.
+    // If `u_texture` doesn't exist in the currently bound program, TWGL will ignore it.
+    u_texture: object.texture,
   };
   twgl.setUniforms(programInfo, objectUniforms);
 
@@ -496,9 +531,68 @@ async function drawScene() {
   //console.log(scene.camera);
   const viewProjectionMatrix = setupViewProjection(gl);
 
-  // Draw the objects
-  gl.useProgram(phongProgramInfo.program);
+  // Build global light and camera uniforms before using programs
+  const numLights = 25;
+  const lightPositions = [];
+  const ambientLights = [];
+  const diffuseLights = [];
+  const specularLights = [];
 
+  for (let i = 0; i < numLights; i++) {
+    const light = scene.lights[i];
+
+    if (light) {
+      lightPositions.push(
+        light.posArray[0],
+        light.posArray[1],
+        light.posArray[2]
+      );
+
+      ambientLights.push(
+        light.ambient[0],
+        light.ambient[1],
+        light.ambient[2],
+        light.ambient[3]
+      );
+
+      diffuseLights.push(
+        light.diffuse[0],
+        light.diffuse[1],
+        light.diffuse[2],
+        light.diffuse[3]
+      );
+
+      specularLights.push(
+        light.specular[0],
+        light.specular[1],
+        light.specular[2],
+        light.specular[3]
+      );
+    } else {
+      // If no more lights
+      lightPositions.push(0.0, 10000.0, 0.0);
+      ambientLights.push(0.0, 0.0, 0.0, 1.0);
+      diffuseLights.push(0.0, 0.0, 0.0, 1.0);
+      specularLights.push(0.0, 0.0, 0.0, 1.0);
+    }
+  }
+
+  const globalUniforms = {
+    u_viewWorldPosition: scene.camera.posArray,
+    u_lightWorldPosition: lightPositions,
+    u_ambientLight: ambientLights,
+    u_diffuseLight: diffuseLights,
+    u_specularLight: specularLights,
+  };
+
+  // Set per-program global uniforms. Bind each program before setting its uniforms
+  gl.useProgram(phongProgramInfo.program);
+  twgl.setUniforms(phongProgramInfo, globalUniforms);
+
+  gl.useProgram(textureProgramInfo.program);
+  twgl.setUniforms(textureProgramInfo, { u_viewWorldPosition: scene.camera.posArray });
+
+  // Draw the objects. Choose program per-object to avoid setting uniforms for the wrong program.
   for (let i = 0; i < agents.length; i++) {
     const agent = agents[i];
     // If the agent id already exists, skip
@@ -578,63 +672,17 @@ async function drawScene() {
   }
 
   for (let object of scene.objects) {
-    drawObject(gl, phongProgramInfo, object, viewProjectionMatrix, fract);
-  }
-
-  const numLights = 25;
-  const lightPositions = [];
-  const ambientLights = [];
-  const diffuseLights = [];
-  const specularLights = [];
-
-  for (let i = 0; i < numLights; i++) {
-    const light = scene.lights[i];
-
-    if (light) {
-      lightPositions.push(
-        light.posArray[0],
-        light.posArray[1],
-        light.posArray[2]
-      );
-
-      ambientLights.push(
-        light.ambient[0],
-        light.ambient[1],
-        light.ambient[2],
-        light.ambient[3]
-      );
-
-      diffuseLights.push(
-        light.diffuse[0],
-        light.diffuse[1],
-        light.diffuse[2],
-        light.diffuse[3]
-      );
-
-      specularLights.push(
-        light.specular[0],
-        light.specular[1],
-        light.specular[2],
-        light.specular[3]
-      );
+    // Use texture program only when object has a texture (e.g., skybox with a texture)
+    if (object.texture && object.id === -7) {
+      gl.useProgram(textureProgramInfo.program);
+      drawObject(gl, textureProgramInfo, object, viewProjectionMatrix, fract);
     } else {
-      // If no more lights
-      lightPositions.push(0.0, 10000.0, 0.0);
-      ambientLights.push(0.0, 0.0, 0.0, 1.0);
-      diffuseLights.push(0.0, 0.0, 0.0, 1.0);
-      specularLights.push(0.0, 0.0, 0.0, 1.0);
+      // Default: use the phong program so color/materials are visible
+      gl.useProgram(phongProgramInfo.program);
+      drawObject(gl, phongProgramInfo, object, viewProjectionMatrix, fract);
     }
   }
-
-  const globalUniforms = {
-    u_viewWorldPosition: scene.camera.posArray,
-    u_lightWorldPosition: lightPositions,
-    u_ambientLight: ambientLights,
-    u_diffuseLight: diffuseLights,
-    u_specularLight: specularLights,
-  };
-
-  twgl.setUniforms(phongProgramInfo, globalUniforms);
+  
 
   // Update the scene after the elapsed duration
   if (elapsed >= duration) {
