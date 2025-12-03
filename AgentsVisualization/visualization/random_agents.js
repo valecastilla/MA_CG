@@ -65,28 +65,28 @@ import objTextAgent1 from "../assets/obj/3d/huevos/huevo1.obj?raw";
 import agent1MltText from "../assets/obj/3d/huevos/huevo1.mtl?raw";
 agentObjects.push(objTextAgent1);
 agentMtlObjects.push(agent1MltText);
-  import objTextAgent2 from "../assets/obj/3d/huevos/huevo2.obj?raw";
-  import agent2MltText from "../assets/obj/3d/huevos/huevo2.mtl?raw";
+import objTextAgent2 from "../assets/obj/3d/huevos/huevo2.obj?raw";
+import agent2MltText from "../assets/obj/3d/huevos/huevo2.mtl?raw";
 agentObjects.push(objTextAgent2);
 agentMtlObjects.push(agent2MltText);
-  import objTextAgent3 from "../assets/obj/3d/huevos/huevo3.obj?raw";
-  import agent3MltText from "../assets/obj/3d/huevos/huevo3.mtl?raw";
+import objTextAgent3 from "../assets/obj/3d/huevos/huevo3.obj?raw";
+import agent3MltText from "../assets/obj/3d/huevos/huevo3.mtl?raw";
 agentObjects.push(objTextAgent3);
 agentMtlObjects.push(agent3MltText);
-  import objTextAgent4 from "../assets/obj/3d/huevos/huevo4.obj?raw";
-  import agent4MltText from "../assets/obj/3d/huevos/huevo4.mtl?raw";
+import objTextAgent4 from "../assets/obj/3d/huevos/huevo4.obj?raw";
+import agent4MltText from "../assets/obj/3d/huevos/huevo4.mtl?raw";
 agentObjects.push(objTextAgent4);
 agentMtlObjects.push(agent4MltText);
-  import objTextAgent5 from "../assets/obj/3d/huevos/huevo5.obj?raw";
-  import agent5MltText from "../assets/obj/3d/huevos/huevo5.mtl?raw";
+import objTextAgent5 from "../assets/obj/3d/huevos/huevo5.obj?raw";
+import agent5MltText from "../assets/obj/3d/huevos/huevo5.mtl?raw";
 agentObjects.push(objTextAgent5);
 agentMtlObjects.push(agent5MltText);
-  import objTextAgent6 from "../assets/obj/3d/huevos/huevo6.obj?raw";
-  import agent6MltText from "../assets/obj/3d/huevos/huevo6.mtl?raw";
+import objTextAgent6 from "../assets/obj/3d/huevos/huevo6.obj?raw";
+import agent6MltText from "../assets/obj/3d/huevos/huevo6.mtl?raw";
 agentObjects.push(objTextAgent6);
 agentMtlObjects.push(agent6MltText);
-  import objTextAgent7 from "../assets/obj/3d/huevos/huevo7.obj?raw";
-  import agent7MltText from "../assets/obj/3d/huevos/huevo7.mtl?raw";
+import objTextAgent7 from "../assets/obj/3d/huevos/huevo7.obj?raw";
+import agent7MltText from "../assets/obj/3d/huevos/huevo7.mtl?raw";
 agentObjects.push(objTextAgent7);
 agentMtlObjects.push(agent7MltText);
 
@@ -187,7 +187,6 @@ let agentObjects3d = [];
 
 let legBase = null;
 
-
 const scene = new Scene3D();
 
 // Global variables
@@ -195,6 +194,7 @@ let phongProgramInfo = undefined;
 let textureProgramInfo = undefined;
 let gl = undefined;
 const duration = 1000; // ms
+let totalTime = 0;
 let elapsed = 0;
 let then = 0;
 
@@ -310,7 +310,9 @@ function setupObjects(scene, gl, programInfo) {
   }
 
   // Leg Base
-  
+  legBase = new Object3D(-9);
+  const legObjText = generateConeOBJ(16, 1.0, 0.5, 0.5);
+  legBase.prepareVAO(gl, programInfo, legObjText);
 
   // Obstacles
   let obstacleObjects3d = [];
@@ -467,7 +469,7 @@ function setupSkybox(scene, gl, programInfo) {
 
   // Create a 2D texture
   skybox.texture = twgl.createTexture(gl, {
-    src: layoutSB,            
+    src: layoutSB,
     min: gl.LINEAR_MIPMAP_LINEAR,
     mag: gl.LINEAR,
     wrap: gl.CLAMP_TO_EDGE,
@@ -479,7 +481,6 @@ function setupSkybox(scene, gl, programInfo) {
 
   scene.addObject(skybox);
 }
-
 
 // Draw an object with its corresponding transformations
 function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
@@ -517,19 +518,39 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   object.rotRad.y = object.rotDeg.y * Math.PI / 180;
   object.rotRad.z = object.rotDeg.z * Math.PI / 180; */
 
-  // Create the individual transform matrices
   const scaMat = M4.scale(v3_sca);
   const rotXMat = M4.rotationX(object.rotRad.x);
   const rotYMat = M4.rotationY(object.rotRad.y);
   const rotZMat = M4.rotationZ(object.rotRad.z);
   const traMat = M4.translation(v3_tra);
 
-  // Create the composite matrix with all transformations
   let transforms = M4.identity();
+
+  // First, base P = scale
   transforms = M4.multiply(scaMat, transforms);
-  transforms = M4.multiply(rotXMat, transforms);
-  transforms = M4.multiply(rotYMat, transforms);
-  transforms = M4.multiply(rotZMat, transforms);
+
+  if (object.pivot) {
+    // Pivot in object space
+    const px = object.pivot.x;
+    const py = object.pivot.y;
+    const pz = object.pivot.z;
+
+    const Tinv = M4.translation([-px, -py, -pz]); // Move to origin
+    const T = M4.translation([px, py, pz]); // Move back to pivot
+
+    // P' = T * R * T^-1 * P
+    transforms = M4.multiply(Tinv, transforms);
+    transforms = M4.multiply(rotXMat, transforms);
+    transforms = M4.multiply(rotYMat, transforms);
+    transforms = M4.multiply(rotZMat, transforms);
+    transforms = M4.multiply(T, transforms);
+  } else {
+    // Default rotation around object origin
+    transforms = M4.multiply(rotXMat, transforms);
+    transforms = M4.multiply(rotYMat, transforms);
+    transforms = M4.multiply(rotZMat, transforms);
+  }
+
   transforms = M4.multiply(traMat, transforms);
 
   object.matrix = transforms;
@@ -572,6 +593,7 @@ async function drawScene() {
   elapsed += deltaTime;
   let fract = Math.min(1.0, elapsed / duration);
   then = now;
+  totalTime += deltaTime / 1000.0; // In seconds
 
   // Clear the canvas
   gl.clearColor(0, 0, 0, 1);
@@ -644,7 +666,9 @@ async function drawScene() {
   twgl.setUniforms(phongProgramInfo, globalUniforms);
 
   gl.useProgram(textureProgramInfo.program);
-  twgl.setUniforms(textureProgramInfo, { u_viewWorldPosition: scene.camera.posArray });
+  twgl.setUniforms(textureProgramInfo, {
+    u_viewWorldPosition: scene.camera.posArray,
+  });
 
   // Draw the objects. Choose program per-object to avoid setting uniforms for the wrong program.
   for (let i = 0; i < agents.length; i++) {
@@ -658,50 +682,74 @@ async function drawScene() {
     agent.arrays = agentObj.arrays;
     agent.bufferInfo = agentObj.bufferInfo;
     agent.vao = agentObj.vao;
-    agent.translation = { x: 0.0, y: 0.0, z: 0.0 };
+    agent.translation = { x: 0.0, y: 0.15, z: 0.0 };
     agent.scale = { x: 1.5, y: 1.5, z: 1.5 };
     agent.color = agentObj.color;
     scene.addObject(agent);
 
-    // Create a unique little sub-object for this agent
-    const littleA = new Object3D(-2000 - i);
-    littleA.arrays = agent.arrays;
-    littleA.bufferInfo = agent.bufferInfo;
-    littleA.vao = agent.vao;
-    littleA.scale = { x: 0.3, y: 0.35, z: 0.3 };
-    littleA.translation = { x: 0.0, y: 0.1, z: 0.0 }; // Inside the same cell
-    littleA.color = [1.0, 0.84, 0.0, 1.0]; // Gold color
+    // Left leg
+    const leftLeg = new Object3D(-3000 - i * 2); // unique id per leg
+    leftLeg.arrays = legBase.arrays;
+    leftLeg.bufferInfo = legBase.bufferInfo;
+    leftLeg.vao = legBase.vao;
+    leftLeg.setPosition(agent.posArray);
+    leftLeg.scale = { x: 0.08, y: 0.5, z: 0.08 };
+    leftLeg.translation = { x: -0.1, y: -0.25, z: 0.0 };
+    leftLeg.pivot = { x: 0.0, y: 0.5, z: 0.0 }; // pivot at top of the cylinder
+    leftLeg.walkPhase = Math.random() * Math.PI * 2;
+    leftLeg.rotRad = { x: 0, y: 0, z: 0 };
+    leftLeg.parentId = agent.id; // So it moves with the agent
 
-    // Attach to the main agent
-    agent.subObject = littleA;
+    // Right leg
+    const rightLeg = new Object3D(-3001 - i * 2);
+    rightLeg.arrays = legBase.arrays;
+    rightLeg.bufferInfo = legBase.bufferInfo;
+    rightLeg.vao = legBase.vao;
+    rightLeg.setPosition(agent.posArray);
+    rightLeg.scale = { x: 0.08, y: 0.5, z: 0.08 };
+    rightLeg.translation = { x: 0.1, y: -0.25, z: 0.0 };
+    rightLeg.pivot = { x: 0.0, y: 0.5, z: 0.0 };
+    rightLeg.walkPhase = leftLeg.walkPhase + Math.PI; // opposite phase
+    rightLeg.rotRad = { x: 0, y: 0, z: 0 };
+    rightLeg.parentId = agent.id;
 
-    // Rotating little egg parameters
-    littleA.rotatingRadius = 0.4;
-    littleA.rotatingAngle = Math.random() * Math.PI * 2; // Random start angle
+    // Save references on the agent for rotation
+    agent.leftLeg = leftLeg;
+    agent.rightLeg = rightLeg;
 
-    scene.addObject(agent);
-    scene.addObject(littleA);
+    scene.addObject(leftLeg);
+    scene.addObject(rightLeg);
   }
 
-  // Make the little agents orbit around their parent agents using `fract`
+  // Animate legs as if walking
+  const walkSpeed = 4.0; // radians per second
+  const walkAmplitude = 0.6; // max angle in radians
+
   for (const agent of agents) {
-    const sub = agent.subObject;
-    if (!sub) continue;
+    if (!agent.leftLeg || !agent.rightLeg) continue;
 
-    const center = agent.posArray; // Center is bigger egg position
-    const radius = sub.rotatingRadius;
-    const baseAngle = sub.rotatingAngle;
+    // Sync leg position with agent position
+    if (agent.posArray) {
+      agent.leftLeg.setPosition(agent.posArray);
+      agent.rightLeg.setPosition(agent.posArray);
+    }
 
-    // One full turn per "duration" (1 second): angle = base + fract * 2π
-    const angle = baseAngle + (fract*2.5) * 2 * Math.PI;
+    // Interpolate
+    if (agent.oldPosArray) {
+      agent.leftLeg.oldPosArray = [...agent.oldPosArray];
+      agent.rightLeg.oldPosArray = [...agent.oldPosArray];
+    } else {
+      agent.leftLeg.oldPosArray = null;
+      agent.rightLeg.oldPosArray = null;
+    }
 
-    // Calculate next pos in radius using polar coordinates
-    const rotationX = Math.cos(angle) * radius;
-    const rotationZ = Math.sin(angle) * radius;
+    // Walking rotation around the pivot
+    const phaseBase = totalTime * walkSpeed;
 
-    sub.position.x = center[0] + rotationX;
-    sub.position.y = center[1]; // Same current y
-    sub.position.z = center[2] + rotationZ;
+    agent.leftLeg.rotRad.x =
+      Math.cos(phaseBase + agent.leftLeg.walkPhase) * walkAmplitude;
+    agent.rightLeg.rotRad.x =
+      Math.cos(phaseBase + agent.rightLeg.walkPhase) * walkAmplitude;
   }
 
   // Update traffic light objects colors
@@ -737,7 +785,6 @@ async function drawScene() {
       drawObject(gl, phongProgramInfo, object, viewProjectionMatrix, fract);
     }
   }
-  
 
   // Update the scene after the elapsed duration
   if (elapsed >= duration) {
