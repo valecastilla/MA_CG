@@ -28,6 +28,7 @@ import {
   trafficLights,
   destinations,
   roads,
+  grounds,
   initAgentsModel,
   update,
   getAgents,
@@ -35,97 +36,165 @@ import {
   getTrafficLights,
   getDestinations,
   getRoads,
+  getGrounds,
 } from "../libs/api_connection.js";
 
 import vsGLSL from "../assets/shaders/vs_phong_302.glsl?raw";
 import fsGLSL from "../assets/shaders/fs_phong_302.glsl?raw";
 
+import vsGLSLsb from "../assets/shaders/vs_flat_textures.glsl?raw";
+import fsGLSLsb from "../assets/shaders/fs_flat_textures.glsl?raw";
+
 //import vsGLSL from "../assets/shaders/vs_multi_lights_attenuation.glsl?raw";
 //import fsGLSL from "../assets/shaders/fs_multi_lights_attenuation.glsl?raw";
 
-// Chatgpt function to convert file into string
-function loadText(path) {
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", path, false); // false = synchronous
-  xhr.send(null);
-  return xhr.status >= 200 && xhr.status < 300 ? xhr.responseText : "";
-}
+// Skybox
+// Skybox
+import skyPx from "../assets/obj/3d/skybox/px.png";
+import skyNx from "../assets/obj/3d/skybox/nx.png";
+import skyPy from "../assets/obj/3d/skybox/py.png";
+import skyNy from "../assets/obj/3d/skybox/ny.png";
+import skyPz from "../assets/obj/3d/skybox/pz.png";
+import skyNz from "../assets/obj/3d/skybox/nz.png";
+import layoutSB from "../assets/obj/3d/skybox/layout.png";
 
-const objTextDestination = loadText("../assets/obj/3d/canasta/canasta1.obj");
+// Agents
+let agentObjects = [];
+let agentMtlObjects = [];
+import objTextAgent1 from "../assets/obj/3d/huevos/huevo1.obj?raw";
+import agent1MltText from "../assets/obj/3d/huevos/huevo1.mtl?raw";
+agentObjects.push(objTextAgent1);
+agentMtlObjects.push(agent1MltText);
+import objTextAgent2 from "../assets/obj/3d/huevos/huevo2.obj?raw";
+import agent2MltText from "../assets/obj/3d/huevos/huevo2.mtl?raw";
+agentObjects.push(objTextAgent2);
+agentMtlObjects.push(agent2MltText);
+import objTextAgent3 from "../assets/obj/3d/huevos/huevo3.obj?raw";
+import agent3MltText from "../assets/obj/3d/huevos/huevo3.mtl?raw";
+agentObjects.push(objTextAgent3);
+agentMtlObjects.push(agent3MltText);
+import objTextAgent4 from "../assets/obj/3d/huevos/huevo4.obj?raw";
+import agent4MltText from "../assets/obj/3d/huevos/huevo4.mtl?raw";
+agentObjects.push(objTextAgent4);
+agentMtlObjects.push(agent4MltText);
+import objTextAgent5 from "../assets/obj/3d/huevos/huevo5.obj?raw";
+import agent5MltText from "../assets/obj/3d/huevos/huevo5.mtl?raw";
+agentObjects.push(objTextAgent5);
+agentMtlObjects.push(agent5MltText);
+import objTextAgent6 from "../assets/obj/3d/huevos/huevo6.obj?raw";
+import agent6MltText from "../assets/obj/3d/huevos/huevo6.mtl?raw";
+agentObjects.push(objTextAgent6);
+agentMtlObjects.push(agent6MltText);
+import objTextAgent7 from "../assets/obj/3d/huevos/huevo7.obj?raw";
+import agent7MltText from "../assets/obj/3d/huevos/huevo7.mtl?raw";
+agentObjects.push(objTextAgent7);
+agentMtlObjects.push(agent7MltText);
+
+// Destination
+import objTextDestination from "../assets/obj/3d/canasta/canasta.obj?raw";
 import destinationMltText from "../assets/obj/3d/canasta/canasta.mtl?raw";
 
 // Create vec to store obstacles objects to then chose them randomly
 let obstacleObjects = [];
-const objTextObstacle1 = loadText("../assets/obj/3d/edificios/arbol1.obj");
-import obstacle1MltText from "../assets/obj/3d/edificios/arbol1.mtl?raw";
+let obstacleMtlObjects = [];
+import objTextObstacle1 from "../assets/obj/3d/arbol1.obj?raw";
+import obstacle1MltText from "../assets/obj/3d/arbol1.mtl?raw";
 obstacleObjects.push(objTextObstacle1);
-
-const objTextObstacle2 = loadText("../assets/obj/3d/edificios/arbol2.obj");
-import obstacle2MltText from "../assets/obj/3d/edificios/arbol2.mtl?raw";
+obstacleMtlObjects.push(obstacle1MltText);
+import objTextObstacle2 from "../assets/obj/3d/arboles/arbol2.obj?raw";
+import obstacle2MltText from "../assets/obj/3d/arboles/arbol2.mtl?raw";
 obstacleObjects.push(objTextObstacle2);
-
-const objTextObstacle3 = loadText("../assets/obj/3d/edificios/arbol3.obj");
-import obstacle3MltText from "../assets/obj/3d/edificios/arbol3.mtl?raw";
+obstacleMtlObjects.push(obstacle2MltText);
+import objTextObstacle3 from "../assets/obj/3d/arboles/arbol3.obj?raw";
+import obstacle3MltText from "../assets/obj/3d/arboles/arbol3.mtl?raw";
 obstacleObjects.push(objTextObstacle3);
-
-// const objTextObstacle4 = loadText("../assets/obj/3d/edificios/maleza.obj");
-// import obstacle4MltText from '../assets/obj/3d/edificios/maleza.mtl?raw';
-// obstacleObjects.push(objTextObstacle4);
-
-const objTextObstacle5 = loadText("../assets/obj/3d/edificios/roca1.obj");
-import obstacle5MltText from "../assets/obj/3d/edificios/roca1.mtl?raw";
+obstacleMtlObjects.push(obstacle3MltText);
+import objTextObstacle4 from "../assets/obj/3d/arboles/arbol4.obj?raw";
+import obstacle4MltText from "../assets/obj/3d/arboles/arbol4.mtl?raw";
+obstacleObjects.push(objTextObstacle4);
+obstacleMtlObjects.push(obstacle4MltText);
+import objTextObstacle5 from "../assets/obj/3d/arboles/arbol5.obj?raw";
+import obstacle5MltText from "../assets/obj/3d/arboles/arbol5.mtl?raw";
 obstacleObjects.push(objTextObstacle5);
-
-// const objTextObstacle6 = loadText("../assets/obj/3d/edificios/roca2.obj");
-// import obstacle6MltText from '../assets/obj/3d/edificios/roca2.mtl?raw';
-// obstacleObjects.push(objTextObstacle6);
-
-const objTextObstacle7 = loadText("../assets/obj/3d/edificios/roca3.obj");
-import obstacle7MltText from "../assets/obj/3d/edificios/roca3.mtl?raw";
+obstacleMtlObjects.push(obstacle5MltText);
+import objTextObstacle6 from "../assets/obj/3d/arboles/arbol6.obj?raw";
+import obstacle6MltText from "../assets/obj/3d/arboles/arbol6.mtl?raw";
+obstacleObjects.push(objTextObstacle6);
+obstacleMtlObjects.push(obstacle6MltText);
+import objTextObstacle7 from "../assets/obj/3d/arboles/arbol7.obj?raw";
+import obstacle7MltText from "../assets/obj/3d/arboles/arbol7.mtl?raw";
 obstacleObjects.push(objTextObstacle7);
-
-const objTextObstacle8 = loadText("../assets/obj/3d/edificios/tronco.obj");
-import obstacle8MltText from "../assets/obj/3d/edificios/tronco.mtl?raw";
+obstacleMtlObjects.push(obstacle7MltText);
+import objTextObstacle8 from "../assets/obj/3d/arboles/arbol8.obj?raw";
+import obstacle8MltText from "../assets/obj/3d/arboles/arbol8.mtl?raw";
 obstacleObjects.push(objTextObstacle8);
+obstacleMtlObjects.push(obstacle8MltText);
+import objTextObstacle9 from "../assets/obj/3d/arboles/arbol9.obj?raw";
+import obstacle9MltText from "../assets/obj/3d/arboles/arbol9.mtl?raw";
+obstacleObjects.push(objTextObstacle9);
+obstacleMtlObjects.push(obstacle9MltText);
 
 // Traffic Agents
-const objTextTraffic = loadText("../assets/obj/3d/trafficlight/semaforo.obj");
-//import obstacle8MltText from '../assets/obj/3d/edificios/tronco.mtl?raw';
-
-// Agents
-let agentObjects = [];
-const objTextAgent1 = loadText("../assets/obj/3d/huevos/huevo1.obj");
-import agent1MltText from "../assets/obj/3d/edificios/tronco.mtl?raw";
-agentObjects.push(objTextAgent1);
+import objTextTraffic from "../assets/obj/3d/trafficlight/semaforo.obj?raw";
 
 // Pasto
-const objTextRoad = loadText("../assets/obj/3d/roads/grass.obj");
-import roadMltText from "../assets/obj/3d/grass.mtl?raw";
-const objTextRoad2 = loadText("../assets/obj/3d/roads/grass2.obj");
-import road2MltText from "../assets/obj/3d/roads/grass2.mtl?raw";
+let groundObjects = [];
+let groundMtlObjects = [];
+import objTextGround from "../assets/obj/3d/pastos/grass1.obj?raw";
+import groundMltText from "../assets/obj/3d/pastos/grass1.mtl?raw";
+groundObjects.push(objTextGround);
+groundMtlObjects.push(groundMltText);
+import objTextGround2 from "../assets/obj/3d/pastos/grass2.obj?raw";
+import ground2MltText from "../assets/obj/3d/pastos/grass2.mtl?raw";
+groundObjects.push(objTextGround2);
+groundMtlObjects.push(ground2MltText);
+import objTextGround3 from "../assets/obj/3d/pastos/grass3.obj?raw";
+import ground3MltText from "../assets/obj/3d/pastos/grass3.mtl?raw";
+groundObjects.push(objTextGround3);
+groundMtlObjects.push(ground3MltText);
+import objTextGround4 from "../assets/obj/3d/pastos/grass4.obj?raw";
+import ground4MltText from "../assets/obj/3d/pastos/grass4.mtl?raw";
+groundObjects.push(objTextGround4);
+groundMtlObjects.push(ground4MltText);
+
 // Road
+let roadObjects = [];
+let roadMtlObjects = [];
+import objTextRoad1 from "../assets/obj/3d/tierra/tierra1.obj?raw";
+import road1MltText from "../assets/obj/3d/tierra/tierra1.mtl?raw";
+roadObjects.push(objTextRoad1);
+roadMtlObjects.push(road1MltText);
+import objTextRoad2 from "../assets/obj/3d/tierra/tierra2.obj?raw";
+import road2MltText from "../assets/obj/3d/tierra/tierra2.mtl?raw";
+roadObjects.push(objTextRoad2);
+roadMtlObjects.push(road2MltText);
+import objTextRoad3 from "../assets/obj/3d/tierra/tierra3.obj?raw";
+import road3MltText from "../assets/obj/3d/tierra/tierra3.mtl?raw";
+roadObjects.push(objTextRoad3);
+roadObjects.push(objTextRoad3);
+roadMtlObjects.push(road3MltText);
+roadMtlObjects.push(road3MltText);
+import objTextRoad4 from "../assets/obj/3d/tierra/tierra4.obj?raw";
+import road4MltText from "../assets/obj/3d/tierra/tierra4.mtl?raw";
+roadObjects.push(objTextRoad4);
+roadMtlObjects.push(road4MltText);
 
+// Sky box
+import objTextSkybox from "../assets/models/skybox.obj?raw";
 
-const baseCube = new Object3D(-1);
+// Agents 3D objects
+let agentObjects3d = [];
+
+let legBase = null;
 
 const scene = new Scene3D();
 
-/*
-// Variable for the scene settings
-const settings = {
-    // Speed in degrees
-    rotationSpeed: {
-        x: 0,
-        y: 0,
-        z: 0,
-    },
-};
-*/
-
 // Global variables
 let phongProgramInfo = undefined;
+let textureProgramInfo = undefined;
 let gl = undefined;
 const duration = 1000; // ms
+let totalTime = 0;
 let elapsed = 0;
 let then = 0;
 
@@ -139,6 +208,7 @@ async function main() {
 
   // Prepare the program with the shaders
   phongProgramInfo = twgl.createProgramInfo(gl, [vsGLSL, fsGLSL]);
+  textureProgramInfo = twgl.createProgramInfo(gl, [vsGLSLsb, fsGLSLsb]);
 
   // Initialize the agents model
   await initAgentsModel();
@@ -149,12 +219,15 @@ async function main() {
   await getTrafficLights();
   await getDestinations();
   await getRoads();
+  await getGrounds();
 
   // Initialize the scene
   setupScene();
 
   // Position the objects in the scene
   setupObjects(scene, gl, phongProgramInfo);
+  // Skybox
+  setupSkybox(scene, gl, textureProgramInfo);
 
   // Prepare the user interface
   setupUI();
@@ -203,7 +276,7 @@ function setupScene() {
       : [1.0, 0.0, 0.0, 1.0]; // red
 
     const ambient = [0.0, 0.0, 0.0, 1.0];
-    const diffuse = baseColor; // color dependent on state
+    const diffuse = baseColor; // Color dependent on state
     const specular = [1.0, 1.0, 1.0, 1.0];
 
     const pos = [tl.position.x, tl.position.y, tl.position.z];
@@ -225,63 +298,57 @@ function randRange(min, max) {
 function setupObjects(scene, gl, programInfo) {
   // Create VAOs for the different shapes
   //baseCube = new Object3D(-1);
-  baseCube.prepareVAO(gl, programInfo, objTextAgent1);
-  // Use objloader function with
+  const cube = new Object3D(-8);
+  cube.prepareVAO(gl, programInfo);
 
-  // Array to save the obstacle objects
+  // Agents
+  for (let i = 0; i < agentObjects.length; i++) {
+    loadMtl(agentMtlObjects[i]);
+    const agentObj = new Object3D(-1);
+    agentObj.prepareVAO(gl, programInfo, agentObjects[i]);
+    agentObjects3d.push(agentObj);
+  }
+
+  // Leg Base
+  legBase = new Object3D(-9);
+  const legObjText = generateConeOBJ(16, 1.0, 0.5, 0.5);
+  legBase.prepareVAO(gl, programInfo, legObjText);
+
+  // Obstacles
   let obstacleObjects3d = [];
-  loadMtl(obstacle1MltText);
-  const obstacle1 = new Object3D(-2);
-  obstacle1.prepareVAO(gl, programInfo, obstacleObjects[0]);
-  console.log("arbol1 base color:", obstacle1.color);
-  obstacleObjects3d.push(obstacle1);
-  loadMtl(obstacle2MltText);
-  const obstacle2 = new Object3D(-2);
-  obstacle2.prepareVAO(gl, programInfo, obstacleObjects[1]);
-  obstacleObjects3d.push(obstacle2);
-  //loadMtl(obstacle3MltText);
-  const obstacle3 = new Object3D(-2);
-  obstacle3.prepareVAO(gl, programInfo, obstacleObjects[2]);
-  obstacleObjects3d.push(obstacle3);
-  //loadMtl(obstacle5MltText);
-  const obstacle4 = new Object3D(-2);
-  obstacle4.prepareVAO(gl, programInfo, obstacleObjects[3]);
-  obstacleObjects3d.push(obstacle4);
-  //loadMtl(obstacle7MltText);
-  const obstacle5 = new Object3D(-2);
-  obstacle5.prepareVAO(gl, programInfo, obstacleObjects[4]);
-  obstacleObjects3d.push(obstacle5);
-  //loadMtl(obstacle8MltText);
-  const obstacle6 = new Object3D(-2);
-  obstacle6.prepareVAO(gl, programInfo, obstacleObjects[5]);
-  obstacleObjects3d.push(obstacle6);
-  //loadMtl(destinationMltText);
+  for (let i = 0; i < obstacleObjects.length; i++) {
+    loadMtl(obstacleMtlObjects[i]);
+    const obstacle = new Object3D(-2);
+    obstacle.prepareVAO(gl, programInfo, obstacleObjects[i]);
+    obstacleObjects3d.push(obstacle);
+  }
 
   // Traffic Light
   const trafficLObj = new Object3D(-3, [1, 5, 1]);
   trafficLObj.prepareVAO(gl, programInfo, objTextTraffic);
 
   // Destination
-  //loadMtl(destinationMltText);
+  loadMtl(destinationMltText);
   const destinationObj = new Object3D(-4);
   destinationObj.prepareVAO(gl, programInfo, objTextDestination);
 
   // Roads
-  loadMtl(road2MltText);
-  const roadObj = new Object3D(-5);
-  roadObj.prepareVAO(gl, programInfo, objTextRoad2);
-  
+  let roadObjects3d = [];
+  for (let i = 0; i < roadObjects.length; i++) {
+    loadMtl(roadMtlObjects[i]);
+    const roadObj = new Object3D(-5);
+    roadObj.prepareVAO(gl, programInfo, roadObjects[i]);
+    roadObjects3d.push(roadObj);
+  }
 
-  /*
-  // A scaled cube to use as the ground
-  const ground = new Object3D(-3, [14, 0, 14]);
-  ground.arrays = baseCube.arrays;
-  ground.bufferInfo = baseCube.bufferInfo;
-  ground.vao = baseCube.vao;
-  ground.scale = {x: 50, y: 0.1, z: 50};
-  ground.color = [0.6, 0.6, 0.6, 1];
-  scene.addObject(ground);
-  */
+  // Grounds
+  let groundObjects3d = [];
+  for (let i = 0; i < groundObjects.length; i++) {
+    loadMtl(groundMtlObjects[i]);
+    const groundObj = new Object3D(-6);
+    groundObj.prepareVAO(gl, programInfo, groundObjects[i]);
+    groundObjects3d.push(groundObj);
+  }
 
   // Copy the properties of the base objects
   for (const agent of agents) {
@@ -301,31 +368,29 @@ function setupObjects(scene, gl, programInfo) {
     agent.bufferInfo = baseObstacleObject.bufferInfo;
     agent.vao = baseObstacleObject.vao;
 
-    //agent.color = [0.0, 0.0, 1.0, 1.0];
-
     agent.scale = { x: 0.1, y: 0.1, z: 0.1 };
-    if (index == 5) {
-      agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
-      // Make tronco colored brown
-      agent.color = [0.55, 0.27, 0.07, 1.0];
-      //agent.translation = { x: 0, y: 3, z: 0 };
-    }
-    // Arbol
-    else if (index == 0) {
-      agent.scale = { x: 0.35, y: 0.35, z: 0.35 };
-      agent.color = [34 / 255, 139 / 255, 50 / 255, 1.0];
+    agent.color = baseObstacleObject.color;
+    if (index == 0) {
+      agent.scale = { x: 0.03, y: 0.08, z: 0.05 };
+      agent.translation = { x: 0.0, y: -0.5, z: 0.0 };
     } else if (index == 1) {
-      agent.scale = { x: 0.5, y: 0.4, z: 0.5 };
-      agent.color = [34 / 255, 139 / 255, 34 / 255, 1.0];
+      agent.scale = { x: 0.3, y: 0.3, z: 0.3 };
     } else if (index == 2) {
-      agent.scale = { x: 0.55, y: 0.5, z: 0.55 };
-      agent.color = [98 / 255, 109 / 255, 88 / 255, 1.0];
+      agent.scale = { x: 0.18, y: 0.2, z: 0.18 };
+      agent.translation = { x: 0.0, y: -0.5, z: 0.0 };
     } else if (index == 3) {
-      agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
-      agent.color = [116 / 255, 117 / 255, 120 / 255, 1.0];
+      agent.scale = { x: 0.1, y: 0.13, z: 0.15 };
     } else if (index == 4) {
-      agent.scale = { x: 1.0, y: 1.0, z: 1.0 };
-      agent.color = [116 / 255, 109 / 255, 117 / 255, 1.0];
+      agent.scale = { x: 0.3, y: 0.3, z: 0.3 };
+    } else if (index == 5) {
+      agent.scale = { x: 0.09, y: 0.12, z: 0.09 };
+      agent.translation = { x: 0.0, y: -0.5, z: 0.0 };
+    } else if (index == 6) {
+      agent.scale = { x: 0.4, y: 0.45, z: 0.4 };
+    } else if (index == 7) {
+      agent.scale = { x: 0.3, y: 0.35, z: 0.3 };
+    } else if (index == 8) {
+      agent.scale = { x: 0.4, y: 0.4, z: 0.4 };
     }
     scene.addObject(agent);
   }
@@ -337,8 +402,9 @@ function setupObjects(scene, gl, programInfo) {
     agent.scale = { x: 2.0, y: 2.0, z: 2.0 };
     agent.translation = { x: 0.0, y: 1.5, z: 0.0 };
     agent.color = agent.state
-      ? [0.0, 1.0, 0.0, 1.0] // green
+      ? [122 / 255, 155 / 255, 118 / 255, 1.0] // green
       : [1.0, 0.0, 0.0, 1.0]; // red
+    agent.forceColor = true;
     scene.addObject(agent);
   }
 
@@ -346,31 +412,74 @@ function setupObjects(scene, gl, programInfo) {
     agent.arrays = destinationObj.arrays;
     agent.bufferInfo = destinationObj.bufferInfo;
     agent.vao = destinationObj.vao;
-    agent.translation = { x: 0.0, y: 0.1, z: 0.0 };
-    //agent.color = destinationObj.color;
+    agent.translation = { x: 0.0, y: 0.2, z: 0.0 };
+    // Paint basket random color
+    agent.color = destinationObj.color;
     agent.scale = { x: 0.0075, y: 0.0075, z: 0.0075 };
     scene.addObject(agent);
   }
 
   for (const agent of roads) {
-  //   const roadObj = new Object3D(-5, [14, 0, 14]);
-  //   roadObj.prepareVAO(gl, programInfo);
+    const index = Math.floor(randRange(0, roadObjects3d.length));
+    const roadObj = roadObjects3d[index];
 
-  //   agent.arrays = roadObj.arrays;
-  //   agent.bufferInfo = roadObj.bufferInfo;
-  //   agent.vao = roadObj.vao;
-  //   agent.scale = { x: 50, y: 0.1, z: 50 };
-  //   agent.color = [49 / 255, 233 / 255, 150 / 255, 1.0];
-  //   scene.addObject(agent);
-  // }
+    // if (agent.posArray && Math.round(agent.posArray[0]) === 14 && Math.round(agent.posArray[2]) === 14) {
+    //   agent.arrays = cube.arrays;
+    //   agent.bufferInfo = cube.bufferInfo;
+    //   agent.vao = cube.vao;
+    //   // Keep it at ground level; adjust translation/scale as required
+    //   agent.translation = { x: 0.0, y: -1.0, z: 0.0 };
+    //   agent.scale = { x: 50.0, y: 1.0, z: 50.0 };
+    //   // paint it brown to simulate dirt
+    //   agent.color = [0.214026, 0.111304, 0.050052, 1.0];
+    //   agent.forceColor = true;
+    //   scene.addObject(agent);
+    //   continue;
+    // }
+
     agent.arrays = roadObj.arrays;
     agent.bufferInfo = roadObj.bufferInfo;
     agent.vao = roadObj.vao;
     agent.translation = { x: 0.0, y: -0.4, z: 0.0 };
-    agent.scale = { x: 0.075, y: 0.01, z: 0.075 };
+    agent.scale = { x: 0.055, y: 0.01, z: 0.055 };
     agent.color = roadObj.color;
     scene.addObject(agent);
+  }
+
+  for (const agent of grounds) {
+    const index = Math.floor(randRange(0, groundObjects3d.length));
+    const groundObj = groundObjects3d[index];
+    agent.arrays = groundObj.arrays;
+    agent.bufferInfo = groundObj.bufferInfo;
+    agent.vao = groundObj.vao;
+    agent.translation = { x: 0.0, y: -0.3, z: 0.0 };
+    agent.scale = { x: 0.06, y: 0.01, z: 0.06 };
+    agent.color = groundObj.color;
+    scene.addObject(agent);
+  }
 }
+
+function setupSkybox(scene, gl, programInfo) {
+  const skybox = new Object3D(-7);
+  skybox.prepareVAO(gl, programInfo, objTextSkybox);
+
+  // Position and scale
+  skybox.translation = { x: 11.0, y: 0.0, z: 11.0 };
+  skybox.scale = { x: 5.0, y: 5.0, z: 5.0 };
+
+  // Create a 2D texture
+  skybox.texture = twgl.createTexture(gl, {
+    src: layoutSB,
+    min: gl.LINEAR_MIPMAP_LINEAR,
+    mag: gl.LINEAR,
+    wrap: gl.CLAMP_TO_EDGE,
+  });
+
+  // Let the texture control the color
+  skybox.forceColor = false;
+  skybox.color = [1, 1, 1, 1];
+
+  scene.addObject(skybox);
 }
 
 // Draw an object with its corresponding transformations
@@ -379,10 +488,7 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   let v3_tra = object.posArray;
   let v3_sca = object.scaArray;
 
-  if (
-    object.oldPosArray &&
-    object.posArray
-  ) {
+  if (object.oldPosArray && object.posArray) {
     const a = object.oldPosArray; // old position
     const b = object.posArray; // new position
 
@@ -412,19 +518,39 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   object.rotRad.y = object.rotDeg.y * Math.PI / 180;
   object.rotRad.z = object.rotDeg.z * Math.PI / 180; */
 
-  // Create the individual transform matrices
   const scaMat = M4.scale(v3_sca);
   const rotXMat = M4.rotationX(object.rotRad.x);
   const rotYMat = M4.rotationY(object.rotRad.y);
   const rotZMat = M4.rotationZ(object.rotRad.z);
   const traMat = M4.translation(v3_tra);
 
-  // Create the composite matrix with all transformations
   let transforms = M4.identity();
+
+  // First, base P = scale
   transforms = M4.multiply(scaMat, transforms);
-  transforms = M4.multiply(rotXMat, transforms);
-  transforms = M4.multiply(rotYMat, transforms);
-  transforms = M4.multiply(rotZMat, transforms);
+
+  if (object.pivot) {
+    // Pivot in object space
+    const px = object.pivot.x;
+    const py = object.pivot.y;
+    const pz = object.pivot.z;
+
+    const Tinv = M4.translation([-px, -py, -pz]); // Move to origin
+    const T = M4.translation([px, py, pz]); // Move back to pivot
+
+    // P' = T * R * T^-1 * P
+    transforms = M4.multiply(Tinv, transforms);
+    transforms = M4.multiply(rotXMat, transforms);
+    transforms = M4.multiply(rotYMat, transforms);
+    transforms = M4.multiply(rotZMat, transforms);
+    transforms = M4.multiply(T, transforms);
+  } else {
+    // Default rotation around object origin
+    transforms = M4.multiply(rotXMat, transforms);
+    transforms = M4.multiply(rotYMat, transforms);
+    transforms = M4.multiply(rotZMat, transforms);
+  }
+
   transforms = M4.multiply(traMat, transforms);
 
   object.matrix = transforms;
@@ -445,6 +571,13 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
     u_diffuseColor: object.color,
     u_specularColor: object.color,
     u_shininess: object.shininess,
+    // Texture and color depending on object properties
+    u_useDiffuseMap: object.texture ? true : false,
+    u_forceDiffuseColor: object.forceColor ? true : false,
+    u_diffuseMap: object.texture,
+    // Provide a common sampler name used by the simple texture shader.
+    // If `u_texture` doesn't exist in the currently bound program, TWGL will ignore it.
+    u_texture: object.texture,
   };
   twgl.setUniforms(programInfo, objectUniforms);
 
@@ -460,6 +593,7 @@ async function drawScene() {
   elapsed += deltaTime;
   let fract = Math.min(1.0, elapsed / duration);
   then = now;
+  totalTime += deltaTime / 1000.0; // In seconds
 
   // Clear the canvas
   gl.clearColor(0, 0, 0, 1);
@@ -473,35 +607,7 @@ async function drawScene() {
   //console.log(scene.camera);
   const viewProjectionMatrix = setupViewProjection(gl);
 
-  // Draw the objects
-  gl.useProgram(phongProgramInfo.program);
-
-  for (const agent of agents) {
-    agent.arrays = baseCube.arrays;
-    agent.bufferInfo = baseCube.bufferInfo;
-    agent.vao = baseCube.vao;
-    agent.scale = { x: 0.25, y: 0.35, z: 0.25 };
-    scene.addObject(agent);
-  }
-
-  for (let object of scene.objects) {
-    drawObject(gl, phongProgramInfo, object, viewProjectionMatrix, fract);
-  }
-
-  for (const tl of trafficLights) {
-    const light = scene.lights.find((l) => l.trafficId === tl.id);
-    if (!light) continue;
-
-    const baseColor = tl.state
-      ? [0.0, 1.0, 0.0, 1.0] // green
-      : [1.0, 0.0, 0.0, 1.0]; // red
-
-    light.ambient = [0.2, 0.2, 0.2, 1.0];
-
-    light.diffuse = baseColor;
-    // specular stay white
-  }
-
+  // Build global light and camera uniforms before using programs
   const numLights = 25;
   const lightPositions = [];
   const ambientLights = [];
@@ -547,20 +653,138 @@ async function drawScene() {
     }
   }
 
-  const ambientLight = [0.2, 0.2, 0.2, 1.0];
-
   const globalUniforms = {
     u_viewWorldPosition: scene.camera.posArray,
     u_lightWorldPosition: lightPositions,
-    u_ambientLight: ambientLight,
+    u_ambientLight: ambientLights,
     u_diffuseLight: diffuseLights,
     u_specularLight: specularLights,
-    u_constant: 1.0,
-    u_linear: 0.09,
-    u_quadratic: 0.032,
   };
 
+  // Set per-program global uniforms. Bind each program before setting its uniforms
+  gl.useProgram(phongProgramInfo.program);
   twgl.setUniforms(phongProgramInfo, globalUniforms);
+
+  gl.useProgram(textureProgramInfo.program);
+  twgl.setUniforms(textureProgramInfo, {
+    u_viewWorldPosition: scene.camera.posArray,
+  });
+
+  // Draw the objects. Choose program per-object to avoid setting uniforms for the wrong program.
+  for (let i = 0; i < agents.length; i++) {
+    const agent = agents[i];
+    // If the agent id already exists, skip
+    const existingAgent = scene.objects.find((o) => o.id === agent.id);
+    if (existingAgent) continue;
+
+    const index = Math.floor(randRange(0, agentObjects3d.length));
+    const agentObj = agentObjects3d[index];
+    agent.arrays = agentObj.arrays;
+    agent.bufferInfo = agentObj.bufferInfo;
+    agent.vao = agentObj.vao;
+    agent.translation = { x: 0.0, y: 0.15, z: 0.0 };
+    agent.scale = { x: 1.5, y: 1.5, z: 1.5 };
+    agent.color = agentObj.color;
+    scene.addObject(agent);
+
+    // Left leg
+    const leftLeg = new Object3D(-3000 - i * 2); // unique id per leg
+    leftLeg.arrays = legBase.arrays;
+    leftLeg.bufferInfo = legBase.bufferInfo;
+    leftLeg.vao = legBase.vao;
+    leftLeg.setPosition(agent.posArray);
+    leftLeg.scale = { x: 0.08, y: 0.5, z: 0.08 };
+    leftLeg.translation = { x: -0.1, y: -0.25, z: 0.0 };
+    leftLeg.pivot = { x: 0.0, y: 0.5, z: 0.0 }; // pivot at top of the cylinder
+    leftLeg.walkPhase = Math.random() * Math.PI * 2;
+    leftLeg.rotRad = { x: 0, y: 0, z: 0 };
+    leftLeg.parentId = agent.id; // So it moves with the agent
+
+    // Right leg
+    const rightLeg = new Object3D(-3001 - i * 2);
+    rightLeg.arrays = legBase.arrays;
+    rightLeg.bufferInfo = legBase.bufferInfo;
+    rightLeg.vao = legBase.vao;
+    rightLeg.setPosition(agent.posArray);
+    rightLeg.scale = { x: 0.08, y: 0.5, z: 0.08 };
+    rightLeg.translation = { x: 0.1, y: -0.25, z: 0.0 };
+    rightLeg.pivot = { x: 0.0, y: 0.5, z: 0.0 };
+    rightLeg.walkPhase = leftLeg.walkPhase + Math.PI; // opposite phase
+    rightLeg.rotRad = { x: 0, y: 0, z: 0 };
+    rightLeg.parentId = agent.id;
+
+    // Save references on the agent for rotation
+    agent.leftLeg = leftLeg;
+    agent.rightLeg = rightLeg;
+
+    scene.addObject(leftLeg);
+    scene.addObject(rightLeg);
+  }
+
+  // Animate legs as if walking
+  const walkSpeed = 4.0; // radians per second
+  const walkAmplitude = 0.6; // max angle in radians
+
+  for (const agent of agents) {
+    if (!agent.leftLeg || !agent.rightLeg) continue;
+
+    // Sync leg position with agent position
+    if (agent.posArray) {
+      agent.leftLeg.setPosition(agent.posArray);
+      agent.rightLeg.setPosition(agent.posArray);
+    }
+
+    // Interpolate
+    if (agent.oldPosArray) {
+      agent.leftLeg.oldPosArray = [...agent.oldPosArray];
+      agent.rightLeg.oldPosArray = [...agent.oldPosArray];
+    } else {
+      agent.leftLeg.oldPosArray = null;
+      agent.rightLeg.oldPosArray = null;
+    }
+
+    // Walking rotation around the pivot
+    const phaseBase = totalTime * walkSpeed;
+
+    agent.leftLeg.rotRad.x =
+      Math.cos(phaseBase + agent.leftLeg.walkPhase) * walkAmplitude;
+    agent.rightLeg.rotRad.x =
+      Math.cos(phaseBase + agent.rightLeg.walkPhase) * walkAmplitude;
+  }
+
+  // Update traffic light objects colors
+  for (const tl of trafficLights) {
+    const baseColor = tl.state
+      ? [0.45, 0.9, 0.27, 1.0]
+      : [255 / 255, 66 / 255, 63 / 255, 1.0];
+
+    // Update light linked to this traffic light
+    const light = scene.lights.find((l) => l.trafficId === tl.id);
+    if (light) {
+      light.ambient = [0.2, 0.2, 0.2, 1.0];
+      light.diffuse = baseColor;
+    }
+
+    // Update the object color
+    const obj = scene.objects.find(
+      (o) => o.id === tl.id || o.trafficId === tl.id
+    );
+    if (obj) {
+      obj.color = baseColor;
+    }
+  }
+
+  for (let object of scene.objects) {
+    // Use texture program only when object has a texture (e.g., skybox with a texture)
+    if (object.texture && object.id === -7) {
+      gl.useProgram(textureProgramInfo.program);
+      drawObject(gl, textureProgramInfo, object, viewProjectionMatrix, fract);
+    } else {
+      // Default: use the phong program so color/materials are visible
+      gl.useProgram(phongProgramInfo.program);
+      drawObject(gl, phongProgramInfo, object, viewProjectionMatrix, fract);
+    }
+  }
 
   // Update the scene after the elapsed duration
   if (elapsed >= duration) {
@@ -605,6 +829,5 @@ function setupUI() {
       .decimals(2)
   */
 }
-
 
 main();
