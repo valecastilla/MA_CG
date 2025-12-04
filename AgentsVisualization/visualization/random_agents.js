@@ -423,20 +423,6 @@ function setupObjects(scene, gl, programInfo) {
     const index = Math.floor(randRange(0, roadObjects3d.length));
     const roadObj = roadObjects3d[index];
 
-    // if (agent.posArray && Math.round(agent.posArray[0]) === 14 && Math.round(agent.posArray[2]) === 14) {
-    //   agent.arrays = cube.arrays;
-    //   agent.bufferInfo = cube.bufferInfo;
-    //   agent.vao = cube.vao;
-    //   // Keep it at ground level; adjust translation/scale as required
-    //   agent.translation = { x: 0.0, y: -1.0, z: 0.0 };
-    //   agent.scale = { x: 50.0, y: 1.0, z: 50.0 };
-    //   // paint it brown to simulate dirt
-    //   agent.color = [0.214026, 0.111304, 0.050052, 1.0];
-    //   agent.forceColor = true;
-    //   scene.addObject(agent);
-    //   continue;
-    // }
-
     agent.arrays = roadObj.arrays;
     agent.bufferInfo = roadObj.bufferInfo;
     agent.vao = roadObj.vao;
@@ -510,14 +496,6 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
     ];
   }
 
-  /* // Animate the rotation of the objects
-  object.rotDeg.x = (object.rotDeg.x + settings.rotationSpeed.x * fract) % 360;
-  object.rotDeg.y = (object.rotDeg.y + settings.rotationSpeed.y * fract) % 360;
-  object.rotDeg.z = (object.rotDeg.z + settings.rotationSpeed.z * fract) % 360;
-  object.rotRad.x = object.rotDeg.x * Math.PI / 180;
-  object.rotRad.y = object.rotDeg.y * Math.PI / 180;
-  object.rotRad.z = object.rotDeg.z * Math.PI / 180; */
-
   const scaMat = M4.scale(v3_sca);
   const rotXMat = M4.rotationX(object.rotRad.x);
   const rotYMat = M4.rotationY(object.rotRad.y);
@@ -535,11 +513,11 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
     const py = object.pivot.y;
     const pz = object.pivot.z;
 
-    const Tinv = M4.translation([-px, -py, -pz]); // Move to origin
+    const TO = M4.translation([-px, -py, -pz]); // Move to origin
     const T = M4.translation([px, py, pz]); // Move back to pivot
 
     // P' = T * R * T^-1 * P
-    transforms = M4.multiply(Tinv, transforms);
+    transforms = M4.multiply(TO, transforms);
     transforms = M4.multiply(rotXMat, transforms);
     transforms = M4.multiply(rotYMat, transforms);
     transforms = M4.multiply(rotZMat, transforms);
@@ -575,10 +553,9 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
     u_useDiffuseMap: object.texture ? true : false,
     u_forceDiffuseColor: object.forceColor ? true : false,
     u_diffuseMap: object.texture,
-    // Provide a common sampler name used by the simple texture shader.
-    // If `u_texture` doesn't exist in the currently bound program, TWGL will ignore it.
     u_texture: object.texture,
   };
+
   twgl.setUniforms(programInfo, objectUniforms);
 
   gl.bindVertexArray(object.vao);
@@ -688,15 +665,15 @@ async function drawScene() {
     scene.addObject(agent);
 
     // Left leg
-    const leftLeg = new Object3D(-3000 - i * 2); // unique id per leg
+    const leftLeg = new Object3D(-3000 - i * 2); // Unique id per leg
     leftLeg.arrays = legBase.arrays;
     leftLeg.bufferInfo = legBase.bufferInfo;
     leftLeg.vao = legBase.vao;
     leftLeg.setPosition(agent.posArray);
     leftLeg.scale = { x: 0.08, y: 0.5, z: 0.08 };
     leftLeg.translation = { x: -0.1, y: -0.25, z: 0.0 };
-    leftLeg.pivot = { x: 0.0, y: 0.5, z: 0.0 }; // pivot at top of the cylinder
-    leftLeg.walkPhase = Math.random() * Math.PI * 2;
+    leftLeg.pivot = { x: 0.0, y: 0.5, z: 0.0 }; // Pivot at top of the cylinder
+    leftLeg.walkPhase = Math.random() * Math.PI * 2; // Starting angle to start walking
     leftLeg.rotRad = { x: 0, y: 0, z: 0 };
     leftLeg.parentId = agent.id; // So it moves with the agent
 
@@ -709,7 +686,7 @@ async function drawScene() {
     rightLeg.scale = { x: 0.08, y: 0.5, z: 0.08 };
     rightLeg.translation = { x: 0.1, y: -0.25, z: 0.0 };
     rightLeg.pivot = { x: 0.0, y: 0.5, z: 0.0 };
-    rightLeg.walkPhase = leftLeg.walkPhase + Math.PI; // opposite phase
+    rightLeg.walkPhase = leftLeg.walkPhase + Math.PI; // Opposite from other leg
     rightLeg.rotRad = { x: 0, y: 0, z: 0 };
     rightLeg.parentId = agent.id;
 
@@ -722,8 +699,10 @@ async function drawScene() {
   }
 
   // Animate legs as if walking
-  const walkSpeed = 4.0; // radians per second
-  const walkAmplitude = 0.6; // max angle in radians
+  // Use oscilation to calculate how much to rotate
+  // θL​(t)=Asin(ωt + ϕL0​)
+  const walkSpeed = 4.0; // ω Angular velocity
+  const walkAmplitude = 0.6; // A Max angle in radians
 
   for (const agent of agents) {
     if (!agent.leftLeg || !agent.rightLeg) continue;
@@ -743,13 +722,38 @@ async function drawScene() {
       agent.rightLeg.oldPosArray = null;
     }
 
-    // Walking rotation around the pivot
+    // Get ϕ base(t)=ωt
     const phaseBase = totalTime * walkSpeed;
 
-    agent.leftLeg.rotRad.x =
-      Math.cos(phaseBase + agent.leftLeg.walkPhase) * walkAmplitude;
-    agent.rightLeg.rotRad.x =
-      Math.cos(phaseBase + agent.rightLeg.walkPhase) * walkAmplitude;
+    // Get movement in x and z
+    let dx = 0.0;
+    let dz = 0.0;
+    if (agent.posArray && agent.oldPosArray) {
+      dx = agent.posArray[0] - agent.oldPosArray[0];
+      dz = agent.posArray[2] - agent.oldPosArray[2];
+    }
+
+    // Use tan(θ)=x/y​ get direction of oscilation
+    // Theta will be 0 when moving along +Z, pi/2(90 degrees) when moving along +X,
+    const theta = Math.atan2(dx, dz);
+
+    // We have an initial phase so we use this formula
+    // Acos(ωt+φR0​) right leg
+    // Acos(ωt+φL0​) left leg
+    const swingLeft = Math.cos(phaseBase + agent.leftLeg.walkPhase) * walkAmplitude;
+    const swingRight = Math.cos(phaseBase + agent.rightLeg.walkPhase) * walkAmplitude;
+
+    // Stablish rotation parameters for matrix translations
+    // Swing defines how much the leg should swing at this moment (positive/negative).
+    // Theta is the angle derived from agent movement: theta = atan2(dx, dz).
+    // We use cos(theta) for the X component and sin(theta) for the Z component.
+    agent.leftLeg.rotRad.x = swingLeft * Math.cos(theta);
+    agent.leftLeg.rotRad.z = -swingLeft * Math.sin(theta);
+    agent.leftLeg.rotRad.y = 0;
+
+    agent.rightLeg.rotRad.x = swingRight * Math.cos(theta);
+    agent.rightLeg.rotRad.z = -swingRight * Math.sin(theta);
+    agent.rightLeg.rotRad.y = 0;
   }
 
   // Update traffic light objects colors
