@@ -4,6 +4,7 @@ from .agent import *
 import json
 from .estructuras import *
 from .car import Car
+from .peticion import *
 
 class CityModel(Model):
  
@@ -548,6 +549,20 @@ class CityModel(Model):
         
 
     def step(self):
+        if self.steps % 5 != 0:
+            data = {
+                "year": 2024,
+                "classroom": 301,
+                "name": "Equipo Dario y vale",
+                "current_cars": DatosGlobales.huevosEnPantalla,
+                "total_arrived": DatosGlobales.huevosLlegaron,
+                "attempt_number": 5
+            }
+
+            resp = validate_attempt(data)
+            print("Response:", resp)
+           
+            
         
         self.crearAutos(self.spawnClock)
        
