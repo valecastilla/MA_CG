@@ -102,7 +102,6 @@ async function getAgents() {
                     }
                 }
             }
-
             for (let i = agents.length - 1; i >= 0; i--) {
                 const localAgent = agents[i];
                 let found = false;
