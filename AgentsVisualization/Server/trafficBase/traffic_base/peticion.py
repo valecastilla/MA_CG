@@ -5,7 +5,7 @@ BASE_URL = "http://10.49.12.39:5000/api/"
 
 def validate_attempt(data: dict):
    
-    endpoint = "validate_attempt"
+    endpoint = "attempt"
     url = BASE_URL + endpoint
     headers = {"Content-Type": "application/json"}
 
