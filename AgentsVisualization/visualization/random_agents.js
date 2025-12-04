@@ -562,6 +562,42 @@ function drawObject(gl, programInfo, object, viewProjectionMatrix, fract) {
   twgl.drawBufferInfo(gl, object.bufferInfo);
 }
 
+function removeDeletedAgentsFromScene() {
+  // Collect all live ids from every array that comes from Python
+  const liveIds = new Set();
+
+  for (const a of agents) liveIds.add(a.id);
+  for (const o of obstacles) liveIds.add(o.id);
+  for (const t of trafficLights) liveIds.add(t.id);
+  for (const d of destinations) liveIds.add(d.id);
+  for (const r of roads) liveIds.add(r.id);
+  for (const g of grounds) liveIds.add(g.id);
+
+  // Go backwards so we can splice safely
+  for (let i = scene.objects.length - 1; i >= 0; i--) {
+    const obj = scene.objects[i];
+
+    // Purely static templates or skybox etc (negative id and no parent)
+    if (obj.id < 0 && obj.parentId == null) {
+      continue;
+    }
+
+    // Legs: they have parentId = agent.id
+    if (obj.parentId != null) {
+      if (!liveIds.has(obj.parentId)) {
+        // Parent disappeared, remove the leg
+        scene.objects.splice(i, 1);
+      }
+      continue;
+    }
+
+    // Any other object with an id that is no longer in any Python list
+    if (!liveIds.has(obj.id)) {
+      scene.objects.splice(i, 1);
+    }
+  }
+}
+
 // Function to do the actual display of the objects
 async function drawScene() {
   // Compute time elapsed since last frame
@@ -794,6 +830,7 @@ async function drawScene() {
   if (elapsed >= duration) {
     elapsed = 0;
     await update();
+    removeDeletedAgentsFromScene();
   }
 
   requestAnimationFrame(drawScene);
