@@ -20,17 +20,32 @@ class GlobalGraph:
         GlobalGraph.nodos = []
     @staticmethod
     def obtenerRutaAleatoria(cell):
-        
-         puntoPartida = next((a for a in cell.agents if isinstance(a, Intersection)), None)
-         idPartida = puntoPartida.idNodoInter
-         nodoDestino=random.choice(GlobalGraph.nodosDestino)
-         
-         idNodoDestino = nodoDestino.id
-         print("=========Id inicio")
-         return GlobalGraph.imprimir_ruta(idPartida, idNodoDestino)
-         
-         
-    
+        puntoPartida = next((a for a in cell.agents if isinstance(a, Intersection)), None)
+        if puntoPartida is None:
+            raise RuntimeError("No hay punto de partida (Intersection) en la celda.")
+        idPartida = puntoPartida.idNodoInter
+
+        if not GlobalGraph.nodosDestino:
+            raise RuntimeError("No hay nodos destino disponibles en GlobalGraph.nodosDestino.")
+
+        # Intentar destinos aleatorios hasta encontrar una ruta o agotar la lista
+        while GlobalGraph.nodosDestino:
+            nodoDestino = random.choice(GlobalGraph.nodosDestino)
+            idNodoDestino = nodoDestino.id
+
+            ruta = GlobalGraph.buscar_ruta_bfs(idPartida, idNodoDestino)
+            if ruta is not None:
+                return ruta
+
+            # Si no hay ruta, quitar ese destino de la lista para no intentar otra vez
+            try:
+                GlobalGraph.nodosDestino.remove(nodoDestino)
+            except ValueError:
+                pass
+
+        # Si se agotaron todos los destinos sin éxito, lanzar error (no se retorna None)
+        raise RuntimeError("No se encontró ruta a ningún destino disponible.")
+
     @staticmethod
     def calcular_direccion(pos_origen, pos_destino):
        
@@ -125,22 +140,7 @@ class GlobalGraph:
             'distancia': siguiente_paso.get('distancia', 0)
         }
     
-    @staticmethod
-    def imprimir():
-       
-        
-        for nodo in GlobalGraph.nodos:
-            tipo = "DESTINO" if nodo.esDetino else "INTERSECCIÓN"
-            print(f"\nNodo {nodo.id} ({tipo}):")
-            print(f"  Posición: {nodo.posicion}")
-            if hasattr(nodo, 'intersecciones'):
-                print(f"  Intersecciones: {len(nodo.intersecciones)}")
-            if hasattr(nodo, 'conexiones'):
-                print(f"  Conexiones: {len(nodo.conexiones)}")
-                for conn in nodo.conexiones:
-                    direccion_texto = f" hacia el {conn['direccion']}" if 'direccion' in conn else ""
-                    print(f"    -> Nodo {conn['nodo_id']} en {conn['posicion']}{direccion_texto}")
-                    print(f"       Distancia: {conn['distancia']} pasos")
+   
     
     @staticmethod
     def obtener_nodo_por_id(nodo_id):
@@ -190,27 +190,22 @@ class GlobalGraph:
      
         return nNodos
     
-    @staticmethod
-    def crearConexiones():
-        print("Creando conexiones...")
     
     @staticmethod
     def buscar_ruta_bfs(nodo_origen_id, nodo_destino_id):
        
-        # Obtener los nodos
+        #bbtener los nodos
         nodo_origen = GlobalGraph.obtener_nodo_por_id(nodo_origen_id)
         nodo_destino = GlobalGraph.obtener_nodo_por_id(nodo_destino_id)
         
-        # Verificar que ambos nodos existan
+        #asmbos nodos existan
         if nodo_origen is None:
-            print(f"Error: No se encontró el nodo origen con ID {nodo_origen_id}")
             return None
         
         if nodo_destino is None:
-            print(f"Error: No se encontró el nodo destino con ID {nodo_destino_id}")
             return None
         
-        # Caso especial: origen y destino son el mismo
+        #si dieccion y destino son iguales
         if nodo_origen_id == nodo_destino_id:
             return [{
                 'nodo_id': nodo_origen_id,
@@ -218,12 +213,11 @@ class GlobalGraph:
                 'direccion': None
             }]
         
-        # Cola para BFS: cada elemento es una tupla (nodo_actual, camino_hasta_ahora)
-        # camino_hasta_ahora es una lista de diccionarios con nodo_id, posicion y direccion
+   
         cola = deque([(nodo_origen, [{
             'nodo_id': nodo_origen_id,
             'posicion': nodo_origen.posicion,
-            'direccion': None  # El primer nodo no tiene dirección de llegada
+            'direccion': None  
         }])])
         
         # Set de nodos visitados
@@ -233,31 +227,30 @@ class GlobalGraph:
         while cola:
             nodo_actual, camino = cola.popleft()
             
-            # Explorar vecinos/conexiones
+            #explorar vecinos
             conexiones = nodo_actual.conexiones if hasattr(nodo_actual, 'conexiones') else []
             
             for conn in conexiones:
                 vecino_id = conn['nodo_id']
                 
-                # Si ya visitamos este nodo, lo ignoramos
+                #ecitar si ya existe este nodo
                 if vecino_id in visitados:
                     continue
                 
-                # Marcar como visitado
+                #marcar vis
                 visitados.add(vecino_id)
                 
-                # Obtener la dirección hacia este vecino
-                # Si no existe en la conexión, calcularla
+                #Oobtener la dirección hacia vec
+
                 if 'direccion' in conn and conn['direccion'] != 'Desconocida':
                     direccion = conn['direccion']
                 else:
-                    # Calcular la dirección sobre la marcha
+                    
                     direccion = GlobalGraph.calcular_direccion(
                         nodo_actual.posicion,
                         conn['posicion']
                     )
                 
-                # Crear nuevo paso en el camino
                 nuevo_paso = {
                     'nodo_id': vecino_id,
                     'posicion': conn['posicion'],
@@ -265,19 +258,18 @@ class GlobalGraph:
                     'distancia': conn.get('distancia', 0)
                 }
                 
-                # Crear nuevo camino
+                #nuevo camino
                 nuevo_camino = camino + [nuevo_paso]
                 
-                # Si llegamos al destino, retornar el camino
+                # Si llegamos al destino regresar camino
                 if vecino_id == nodo_destino_id:
                     return nuevo_camino
                 
-                # Agregar a la cola para explorar
+                
                 vecino = GlobalGraph.obtener_nodo_por_id(vecino_id)
                 if vecino:
                     cola.append((vecino, nuevo_camino))
-        
-        # Si salimos del while sin encontrar ruta
+        #none no se encontró la ruta
         return None
     
     @staticmethod
@@ -304,23 +296,24 @@ class Nodo():
         self.posicion = None
         self.conexiones = []
         self.conexiones_dirigidas = []
-        self.intersecciones = []  # Lista de posiciones de intersecciones que forman este nodo
+        self.intersecciones = []  # Lista de posiciones de intersecciones del nodo
         self.vecinos = []
         self.x = 0
         self.y = 0
         self.esDetino = False
         self.isNodo = True
 
-
-# ============================================
-# INSTRUCCIONES PARA USAR EN CityModel:
-# ============================================
-# 
-# En tu método crearConexionesNodos(), al FINAL (después del último print),
-# agrega esta línea:
-#
-#     GlobalGraph.agregar_direccion_a_conexiones()
-#
-# Esto calculará y agregará las direcciones a todas las conexiones que creaste.
-# El método buscar_ruta_bfs ya está actualizado para calcular direcciones
-# sobre la marcha si no existen, así que funcionará de ambas formas.
+class DatosGlobales:
+    aparcionhuevos=0
+    huevosLlegaron= 0
+    huevosEnPantalla= 0
+    
+    @staticmethod
+    def restarHuevos():
+        DatosGlobales.huevosLlegaron+=1
+        DatosGlobales.huevosEnPantalla-=1
+      
+    @staticmethod
+    def sumarHuevos():
+        DatosGlobales.aparcionhuevos+=1
+        DatosGlobales.huevosEnPantalla+=1
