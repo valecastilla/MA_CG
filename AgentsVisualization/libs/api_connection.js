@@ -102,6 +102,25 @@ async function getAgents() {
                     }
                 }
             }
+
+            for (let i = agents.length - 1; i >= 0; i--) {
+                const localAgent = agents[i];
+                let found = false;
+
+                // Check if this id appears in result.positions
+                for (let j = 0; j < result.positions.length; j++) {
+                    const agentFromServer = result.positions[j];
+                    if (agentFromServer.id === localAgent.id) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                // If not found in server result, remove from agents
+                if (!found) {
+                    agents.splice(i, 1);
+                }
+            }
         }
 
     } catch (error) {
