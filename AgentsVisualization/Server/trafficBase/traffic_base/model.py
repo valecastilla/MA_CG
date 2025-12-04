@@ -20,7 +20,7 @@ class CityModel(Model):
         super().__init__(seed=seed)
 
         dataDictionary = json.load(open("city_files/mapDictionary.json"))
-        self.spawnClock=10
+        self.spawnClock=5
         self.num_agents = N
         self.traffic_lights = []
 
@@ -551,9 +551,9 @@ class CityModel(Model):
     def step(self):
         if self.steps % 5 != 0:
             data = {
-                "year": 2024,
-                "classroom": 301,
-                "name": "Equipo Dario y vale",
+                "year": 2025,
+                "classroom": 302,
+                "name": "Confis",
                 "current_cars": DatosGlobales.huevosEnPantalla,
                 "total_arrived": DatosGlobales.huevosLlegaron,
                 "attempt_number": 5
