@@ -149,7 +149,7 @@ class Car(CellAgent):
             if self.celda_tiene_obstaculo_fijo(celda_lateral) or self.celda_tiene_carro(celda_lateral):
                 continue
             
-            # Verificar que sea un camino válido (Road)
+            # Verificar que sea un camino
             road_lateral = next((a for a in celda_lateral.agents if isinstance(a, Road)), None)
             if road_lateral and road_lateral.direction in direcciones_permitidas:
             
@@ -191,19 +191,19 @@ class Car(CellAgent):
             if celda_diagonal is None or celda_lateral is None:
                 continue
             
-            # Verificar que ambas celdas estén libres 
+            # Verificar que ambas celdas esten libres 
             if (self.celda_tiene_carro(celda_diagonal) or 
                 self.celda_tiene_obstaculo_fijo(celda_diagonal) or
                 self.celda_tiene_carro(celda_lateral) or 
                 self.celda_tiene_obstaculo_fijo(celda_lateral)):
                 continue
             
-            # Verificar que sean Roads válidos
+            # Verificar que sean Roads vlidos
             road_diagonal = next((a for a in celda_diagonal.agents if isinstance(a, Road)), None)
             road_lateral = next((a for a in celda_lateral.agents if isinstance(a, Road)), None)
             
             if road_diagonal and road_lateral:
-                print(f"🏎️ Rebasando carro por {diagonal}")
+                
                 self.intentos_rebase += 1
                 return diagonal
         
@@ -227,7 +227,7 @@ class Car(CellAgent):
         
         # Verificar si llegó a destino
         if x == xf and y == yf:
-            print(f"🎯 Carro llegó a destino en posición ({xf}, {yf})")
+            DatosGlobales.restarHuevos()
             self.debe_eliminarse = True
             return
         
@@ -247,9 +247,9 @@ class Car(CellAgent):
                     self.isNodoFinal = True
                 
                 self.direccionMovimiento = siguiente_nodo["direccion"]
-                self.intentos_rebase = 0  # Reset intentos al cambiar de nodo
+                self.intentos_rebase = 0 
             else:
-                print("🏁 Llegó al final de la ruta")
+                #ultimo tramo de la ruta
                 self.isNodoFinal = True
                 return
         
@@ -265,7 +265,6 @@ class Car(CellAgent):
             "izquierdaAbajo": vecinos["izquierdaAbajo"]
         }
         
-        # Ajuste fino en nodo final
         if self.isNodoFinal:
             if self.direccionMovimiento in ["Arriba", "Abajo"] and y == yf:
                 self.direccionMovimiento = "Derecha" if x < xf else "Izquierda"
@@ -280,13 +279,11 @@ class Car(CellAgent):
         
         # Verificar semáforo rojo
         if self.tiene_semaforo_rojo(celda_destino):
-            print("🚦 Detenido por semáforo en rojo")
             self.esperando = True
             return
         
-        # CASO 1: Obstáculo fijo detectado → RODEAR
+        # Rodear
         if self.celda_tiene_obstaculo_fijo(celda_destino):
-            print(f"🚧 Obstáculo fijo detectado en {self.direccionMovimiento}")
             
             # Buscar ruta alternativa para rodear
             direccion_rodear = self.buscar_ruta_alternativa_obstaculos(self.direccionMovimiento, vecinos)
@@ -298,13 +295,12 @@ class Car(CellAgent):
                     self.move_to(celda_destino)
                     return
             
-            # Si no puede rodear, detenerse
+            # detener
             self.esperando = True
             return
         
         # CARRO DETECTADO
         if self.celda_tiene_carro(celda_destino):
-            print(f"🚗 Carro detectado en {self.direccionMovimiento}")
             
             # Intentar rebasar
             direccion_rebase = self.intentar_rebasar_carro(self.direccionMovimiento, vecinos)
@@ -316,7 +312,7 @@ class Car(CellAgent):
                     self.move_to(celda_destino)
                     return
             
-            # esperar
+            
             self.esperando = True
             return
         
@@ -324,12 +320,9 @@ class Car(CellAgent):
         self.esperando = False
         self.intentos_rebase = 0  # Reset cuando se mueve exitosamente
         self.move_to(celda_destino)
-        print(f"✅ Movimiento exitoso a {self.direccionMovimiento}")
     
     def step(self):
-        """
-        Ejecuta un paso de la simulación.
-        """
+
         if self.debe_eliminarse:
             try:
                 # Remover de la celda
@@ -340,10 +333,8 @@ class Car(CellAgent):
                 if self in self.model.agents:
                     self.model.agents.remove(self)
                 
-                print("✅ Carro eliminado correctamente")
                 return
             except Exception as e:
-                print(f"⚠️ Error al eliminar carro: {e}")
                 return
         
         self.seguirRuta()
