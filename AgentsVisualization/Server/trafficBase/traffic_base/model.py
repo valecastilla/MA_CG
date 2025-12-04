@@ -27,7 +27,7 @@ class CityModel(Model):
 
         # Load the map dictionary. The dictionary maps the characters in the map file to the corresponding agent.
         dataDictionary = json.load(open("city_files/mapDictionary.json"))
-        self.spawnClock=5
+        self.spawnClock=10
         self.num_agents = N
         self.traffic_lights = []
 
