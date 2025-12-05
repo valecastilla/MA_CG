@@ -34,7 +34,7 @@ source .agents/bin/activate
 pip install -U "mesa[all]"
 pip install flask flask_cors
 ```
-5.  Ir a la carpeta agentsServer.
+5.  Ir a la carpeta trafficBase.
 6.  Correr el servidor de flask.
 ```bash
 python agents_server.py
