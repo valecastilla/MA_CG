@@ -6,7 +6,7 @@ Valentina Castilla Melgoza
 Darío Cuauhtémoc Peña Mariano
 
 ### Aclaracion*
-Darío se confundio y también termino usando la cunta de github de la computadora que me presto, entonces no hay manera de distinguir los commits por cuenta:(. Todos los commits que hizo cada quien solo se pueden ver por las ramas en las que trabajo cada una principalmente las ramas vale y dario.
+Darío se confundio y también termino usando la cuenta de github de la computadora que me presto, entonces algunos de mis commits estan hechos desde la cuenta de Darío y no hay manera de distinguir los commits por cuenta:(. Todos los commits que hizo cada quien solo se pueden ver por las ramas en las que trabajo cada una principalmente las ramas vale y dario.
 
 ### Objetivo
 El reto consiste en proponer una solución al problema de movilidad urbana en México, mediante un enfoque que reduzca la congestión vehicular al simular de manera gráfica el tráfico, representando la salida de un sistema multi agentes.  
