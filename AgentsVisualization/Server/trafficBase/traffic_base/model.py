@@ -549,7 +549,7 @@ class CityModel(Model):
         
 
     def step(self):
-        if self.steps % 5 != 0:
+        """ if self.steps % 5 != 0:
             data = {
                 "year": 2025,
                 "classroom": 302,
@@ -560,7 +560,7 @@ class CityModel(Model):
             }
 
             resp = validate_attempt(data)
-            print("Response:", resp)
+            print("Response:", resp) """
            
             
         
